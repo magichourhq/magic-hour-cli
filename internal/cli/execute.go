@@ -17,7 +17,7 @@ func executionFlags(cmd *cobra.Command) (*workflow.Options, *time.Duration) {
 	cmd.Flags().BoolVar(&opts.NoWait, "no-wait", false, "Return the project ID without waiting")
 	cmd.Flags().BoolVar(&opts.NoDownload, "no-download", false, "Wait for completion and return output URLs")
 	cmd.Flags().StringVar(&opts.Output, "output", "", "Output filename, or an existing directory for multiple files; never overwrite")
-	timeout := cmd.Flags().Duration("timeout", 30*time.Minute, "Maximum time for the whole operation")
+	timeout := cmd.Flags().Duration("timeout", 30*time.Minute, "Time limit for stdin and a fresh limit for execution")
 	return opts, timeout
 }
 
@@ -34,6 +34,9 @@ func execute(cmd *cobra.Command, timeout time.Duration, fn func(context.Context,
 	runner := workflow.Runner{Client: api.New(key), Progress: func(message string) { fmt.Fprintln(cmd.ErrOrStderr(), message) }}
 	result, err := fn(ctx, runner)
 	if result.ID != "" {
+		if err != nil {
+			result.Error = err.Error()
+		}
 		if outErr := printResult(cmd, result); outErr != nil && err == nil {
 			return outErr
 		}
@@ -45,6 +48,10 @@ func printResult(cmd *cobra.Command, result workflow.Result) error {
 	format, _ := cmd.Flags().GetString("format")
 	if format == "json" {
 		return writeJSON(cmd, result)
+	}
+	if result.Error != "" {
+		_, err := fmt.Fprintln(cmd.OutOrStdout(), result.ID)
+		return err
 	}
 	if len(result.Outputs) == 0 {
 		_, err := fmt.Fprintln(cmd.OutOrStdout(), result.ID)

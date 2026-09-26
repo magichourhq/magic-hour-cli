@@ -44,6 +44,8 @@ identity, status, and an `outputs` array containing URLs and absolute local path
 when downloaded. Project retrieval also includes the raw response as `project`.
 Failures exit nonzero and print an error on stderr (a JSON error object in JSON
 mode); a known project ID is preserved in stdout so the operation can be resumed.
+In JSON mode, the stdout result also includes `error` so downstream commands
+reject failed upstream work.
 
 ## Combining commands
 
@@ -56,8 +58,10 @@ set -o pipefail
 `--image -` explicitly reads one `mh --format json` result from stdin. It prefers
 downloaded paths when present, otherwise uses output URLs. A repeated-image input
 accepts all outputs; single-file inputs require exactly one. Unfinished projects,
-wrong media types, and empty outputs fail before upload or generation. Stdin is
-never read implicitly. The operation timeout also bounds explicit stdin reads.
+wrong media types, failed upstream commands, and empty outputs fail before upload
+or generation. Stdin is never read implicitly. `--timeout` separately bounds
+explicit stdin reading and execution, so waiting for an upstream command does
+not consume the downstream generation limit.
 
 File flags accept local paths, HTTP(S) URLs, or durable API file paths (such as
 `api-assets/...`). Local files upload automatically; remote references pass

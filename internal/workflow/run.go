@@ -24,6 +24,7 @@ type Result struct {
 	Status  string          `json:"status"`
 	Outputs []Output        `json:"outputs"`
 	Project json.RawMessage `json:"project,omitempty"`
+	Error   string          `json:"error,omitempty"`
 }
 
 type Options struct {
