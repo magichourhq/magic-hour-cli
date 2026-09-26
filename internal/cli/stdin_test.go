@@ -37,7 +37,9 @@ func TestResolveStdinRejectsUnsafeResults(t *testing.T) {
 		name, input, want string
 	}{
 		{"unfinished", `{"status":"queued","outputs":[{"url":"https://example.com/a.png"}]}`, "not complete"},
+		{"failed upstream", `{"type":"image","status":"complete","error":"download failed","outputs":[{"url":"https://example.com/a.png"}]}`, "upstream command failed"},
 		{"wrong media", `{"type":"video","status":"complete","outputs":[{"url":"https://example.com/a.mp4"}]}`, "expects image"},
+		{"wrong output media", `{"type":"image","status":"complete","outputs":[{"url":"https://example.com/a.mp4","media_type":"video"}]}`, "expects image"},
 		{"ambiguous", `{"type":"image","status":"complete","outputs":[{"url":"https://example.com/a.png"},{"url":"https://example.com/b.png"}]}`, "expects one output"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

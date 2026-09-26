@@ -2,10 +2,13 @@ package api
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 type roundTripFunc func(*http.Request) (*http.Response, error)
@@ -35,6 +38,43 @@ func TestDoCreateUsesAPIKeyAndJSON(t *testing.T) {
 	}
 	if result.ID != "job-1" {
 		t.Fatalf("got project ID %q", result.ID)
+	}
+}
+
+func TestCreateErrorIsNotRetried(t *testing.T) {
+	client := New("test-key")
+	calls := 0
+	client.http.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		calls++
+		return &http.Response{
+			StatusCode: 429,
+			Body:       io.NopCloser(strings.NewReader(`{"code":"rate_limited","message":"try later"}`)),
+			Header:     http.Header{"Retry-After": {"3"}},
+		}, nil
+	})
+	err := client.Do(context.Background(), http.MethodPost, "/v1/job", map[string]string{"prompt": "mountain"}, nil)
+	var apiErr *Error
+	if calls != 1 || !errors.As(err, &apiErr) || apiErr.Status != 429 || apiErr.RetryAfter != 3*time.Second || !Retryable(err) {
+		t.Fatalf("calls=%d, error=%v", calls, err)
+	}
+	if Retryable(&Error{Status: 400}) {
+		t.Fatal("classified invalid request as retryable")
+	}
+}
+
+func TestTransferDoesNotSendAPIKeyOrPrintSignedURL(t *testing.T) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if got := req.Header.Get("Authorization"); got != "" {
+			t.Errorf("asset request carried API authorization: %q", got)
+		}
+		w.WriteHeader(http.StatusForbidden)
+	}))
+	defer server.Close()
+	client := New("api-secret")
+	client.http = server.Client()
+	err := client.Transfer(context.Background(), http.MethodGet, server.URL+"/asset?signature=signed-secret", nil, 0, io.Discard)
+	if err == nil || strings.Contains(err.Error(), "signed-secret") || strings.Contains(err.Error(), "api-secret") {
+		t.Fatalf("unsafe transfer error: %v", err)
 	}
 }
 
