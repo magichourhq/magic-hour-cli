@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/magichourhq/cli/internal/config"
+	"github.com/magichourhq/magic-hour-cli/internal/config"
 )
 
 type authTransport func(*http.Request) (*http.Response, error)

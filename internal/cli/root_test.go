@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/magichourhq/cli/internal/workflow"
+	"github.com/magichourhq/magic-hour-cli/internal/workflow"
 	"github.com/spf13/cobra"
 )
 

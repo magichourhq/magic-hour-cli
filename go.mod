@@ -1,4 +1,4 @@
-module github.com/magichourhq/cli
+module github.com/magichourhq/magic-hour-cli
 
 go 1.27.1
 

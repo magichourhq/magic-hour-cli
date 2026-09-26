@@ -8,8 +8,8 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/magichourhq/cli/internal/api"
-	"github.com/magichourhq/cli/internal/cli"
+	"github.com/magichourhq/magic-hour-cli/internal/api"
+	"github.com/magichourhq/magic-hour-cli/internal/cli"
 )
 
 var version = "dev"

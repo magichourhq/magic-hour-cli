@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/magichourhq/cli/internal/catalog"
-	"github.com/magichourhq/cli/internal/workflow"
+	"github.com/magichourhq/magic-hour-cli/internal/catalog"
+	"github.com/magichourhq/magic-hour-cli/internal/workflow"
 	"github.com/spf13/cobra"
 )
 

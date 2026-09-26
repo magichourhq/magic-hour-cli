@@ -32,4 +32,4 @@ release:
   prerelease: auto
   github:
     owner: magichourhq
-    name: cli
+    name: magic-hour-cli

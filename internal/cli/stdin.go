@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/magichourhq/cli/internal/catalog"
-	"github.com/magichourhq/cli/internal/workflow"
+	"github.com/magichourhq/magic-hour-cli/internal/catalog"
+	"github.com/magichourhq/magic-hour-cli/internal/workflow"
 )
 
 // resolveStdin only reads a stream when a file flag explicitly contains '-'.

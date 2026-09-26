@@ -9,8 +9,8 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/magichourhq/cli/internal/api"
-	"github.com/magichourhq/cli/internal/config"
+	"github.com/magichourhq/magic-hour-cli/internal/api"
+	"github.com/magichourhq/magic-hour-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
