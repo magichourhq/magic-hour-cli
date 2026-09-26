@@ -91,9 +91,8 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 		if *timeout <= 0 {
 			return fmt.Errorf("--timeout must be positive")
 		}
-		ctx, cancel := context.WithTimeout(cmd.Context(), *timeout)
+		readCtx, cancel := context.WithTimeout(cmd.Context(), *timeout)
 		defer cancel()
-		cmd.SetContext(ctx)
 		values := map[string][]string{}
 		for _, f := range op.Fields {
 			if !cmd.Flags().Changed(f.Flag) {
@@ -106,7 +105,7 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 				values[f.Flag] = []string{s}
 			}
 		}
-		if err := resolveStdin(ctx, cmd.InOrStdin(), op, values); err != nil {
+		if err := resolveStdin(readCtx, cmd.InOrStdin(), op, values); err != nil {
 			return err
 		}
 		body, err := op.Body(values)

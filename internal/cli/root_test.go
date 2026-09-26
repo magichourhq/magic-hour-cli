@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/magichourhq/cli/internal/workflow"
+	"github.com/spf13/cobra"
 )
 
 func TestImageGenerateDryRun(t *testing.T) {
@@ -78,5 +81,43 @@ func TestImageHelpShowsUsableInputs(t *testing.T) {
 				t.Errorf("%v help contains %q", tc.args, avoid)
 			}
 		}
+	}
+}
+
+func TestFailedResultPreservesIDWithoutPublishingOutput(t *testing.T) {
+	result := workflow.Result{ID: "job-1", Type: "image", Status: "complete", Error: "download failed", Outputs: []workflow.Output{{URL: "https://example.com/a.png"}}}
+	for _, tc := range []struct {
+		format, want, avoid string
+	}{
+		{"text", "job-1\n", "https://example.com/a.png"},
+		{"json", `"error": "download failed"`, `"error": ""`},
+	} {
+		cmd := &cobra.Command{}
+		cmd.Flags().String("format", tc.format, "")
+		var output bytes.Buffer
+		cmd.SetOut(&output)
+		if err := printResult(cmd, result); err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(output.String(), tc.want) || strings.Contains(output.String(), tc.avoid) {
+			t.Errorf("format %s: got %q", tc.format, output.String())
+		}
+	}
+}
+
+func TestPipedInputDoesNotCancelOperationContext(t *testing.T) {
+	root := New("test")
+	root.SetIn(strings.NewReader(`{"type":"image","status":"complete","outputs":[{"url":"https://example.com/a.png"}]}`))
+	root.SetOut(&bytes.Buffer{})
+	root.SetArgs([]string{"image", "edit", "--image", "-", "--prompt", "make it sunset", "--dry-run"})
+	if err := root.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	edit, _, err := root.Find([]string{"image", "edit"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := edit.Context().Err(); err != nil {
+		t.Fatalf("stdin canceled the downstream operation context: %v", err)
 	}
 }

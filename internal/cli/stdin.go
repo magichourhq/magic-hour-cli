@@ -55,6 +55,9 @@ func resolveStdin(ctx context.Context, input io.Reader, op catalog.Operation, va
 	if result.Status != "complete" {
 		return fmt.Errorf("stdin project is not complete (status %q)", result.Status)
 	}
+	if result.Error != "" {
+		return fmt.Errorf("upstream command failed: %s", result.Error)
+	}
 	if field.FileKind != "media" && result.Type != field.FileKind {
 		return fmt.Errorf("--%s expects %s, stdin contains %s", field.Flag, field.FileKind, result.Type)
 	}
