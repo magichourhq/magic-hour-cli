@@ -66,7 +66,7 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 		if len(f.Enum) > 0 {
 			help = strings.TrimSuffix(help, ".")
 		}
-		if f.Required {
+		if f.Required && f.Default == "" {
 			help += " (required)"
 		}
 		if len(f.Enum) > 0 {

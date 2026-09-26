@@ -58,7 +58,7 @@ func TestImageHelpShowsUsableInputs(t *testing.T) {
 		avoid []string
 	}{
 		{[]string{"--help"}, []string{"Generate and edit images with Magic Hour"}, []string{"video, and audio"}},
-		{[]string{"image", "generate", "--help"}, []string{"--aspect-ratio string", "14 choices (use completion", "35 choices (use completion"}, []string{"--aspect-ratio 1:1", "nano-banana-2, gpt-image"}},
+		{[]string{"image", "generate", "--help"}, []string{"--aspect-ratio string", "14 choices (use completion", "35 choices (use completion"}, []string{"--aspect-ratio 1:1", "nano-banana-2, gpt-image", "Maximum varies by model. (required)"}},
 		{[]string{"image", "edit", "--help"}, []string{"--image stringArray", "repeat for multiple images", "Use - for piped mh JSON"}, []string{"This value is either"}},
 	} {
 		cmd := New("test")
