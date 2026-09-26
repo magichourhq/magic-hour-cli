@@ -2,10 +2,25 @@
 
 Generate images, video, and audio from the terminal with `mh`.
 
-Fresh implementation. The planned design combines Go command definitions generated from OpenAPI with shared upload, generation, polling, and download flows. Commands support human-readable and machine-readable output, with explicit piping for composition. No interactive prompts in v1.
+Go command definitions generated from OpenAPI share upload, generation, polling,
+and download flows. Commands support readable text and structured JSON, with
+explicit piping for composition. No interactive prompts in v1.
 
 Under development; no releases yet. All 28 image, video, and audio generation APIs
 support execution, local uploads, polling, downloads, and explicit JSON piping.
+
+## Install
+
+Until the first release, build from this checkout:
+
+```sh
+go build -o mh ./cmd/mh
+```
+
+Release packaging includes standalone macOS/Linux/Windows binaries for Intel and
+ARM, Linux deb/rpm/apk packages, Homebrew, and Scoop. See
+[release and installation instructions](docs/RELEASING.md). A Magic Hour API key
+is required for API calls; help, completion, schema, and dry runs work offline.
 
 ```sh
 go build -o mh ./cmd/mh
@@ -58,8 +73,11 @@ the default configuration directory. Environment credentials take precedence.
 
 Generation waits and downloads by default. `--no-wait` returns the project ID;
 `--no-download` waits and returns URLs. `wait` only waits; use `download` to fetch
-files later. `--timeout` bounds execution (default 30 minutes). Ctrl-C stops local
-work without canceling the server job. Creation requests are not retried.
+files later. `--timeout` bounds execution (default 30 minutes). Explicit stdin has
+its own timeout budget, so upstream rendering does not consume the next job's
+execution time. Ctrl-C stops local work without canceling the server job.
+Creation requests are not retried; polling retries up to three consecutive
+transient failures and honors bounded Retry-After delays.
 
 Default output names are `mh-PROJECT_ID-1.EXT`, `mh-PROJECT_ID-2.EXT`, etc.
 `--output` accepts a filename for one output or an existing directory for multiple
@@ -71,6 +89,9 @@ identity, status, and an `outputs` array containing URLs and absolute local path
 when downloaded. Project retrieval also includes the raw response as `project`.
 Failures exit nonzero and print an error on stderr (a JSON error object in JSON
 mode); a known project ID is preserved in stdout so the operation can be resumed.
+Partial failures include an `error` in JSON results; downstream commands reject
+them even when the remote project completed. `outputs[].media_type` distinguishes
+actual GIF/video/audio output from the project group used to manage it.
 
 ## Combining commands
 
@@ -133,4 +154,8 @@ Use `mh image --help`, `mh video --help`, `mh audio --help`, or `mh schema` to s
 available commands. Each media group has its own `get/wait/download/delete`
 commands, so project type is never guessed.
 
-See [the design](DESIGN.md) for the agreed foundation and remaining decisions.
+See [the design](DESIGN.md) for the architecture and scope.
+
+See [contributing](CONTRIBUTING.md) for the code layout and update flow, and the
+[agent skill](skills/magic-hour/SKILL.md) for machine-oriented usage. Licensed
+under [MIT](LICENSE); dependency licenses are in [third-party notices](THIRD_PARTY_NOTICES.txt).

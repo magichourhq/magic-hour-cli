@@ -1,6 +1,7 @@
 # CLI design
 
-Status: initial direction agreed; implementation details remain open.
+Status: implemented for the current API surface; recipes and interactive prompts
+remain outside v1.
 
 ## Audience and scope
 
@@ -82,14 +83,14 @@ Support composition through explicit stdin flags such as `--image -`:
 
 ```sh
 mh image generate --prompt "A mountain landscape" --no-download --format json |
-  mh video from-image --image - --prompt "Slow camera pan"
+  mh video from-image --image - --prompt "Slow camera pan" --end 5
 ```
 
 The machine-readable result must carry project identity, media type, and output
 references (URLs or local paths). Progress goes to stderr. Validate input media
 types and reject ambiguous output selection. An unfinished `--no-wait` result
 cannot serve as finished media input. Scripts should enable `pipefail` to retain
-upstream failures. Exact result fields and selection syntax remain to be designed.
+upstream failures. The result contract is described below.
 
 Keep the runner callable without Cobra, terminal input, or parsing human-readable
 output. A future recipe executor can call those same operations and pass their
@@ -108,18 +109,25 @@ Compatible API fields should flow through the catalog without handwritten flag
 code. New workflows and incompatible changes may need CLI metadata or custom
 logic changes. Spec updates do not automatically guarantee a usable new command.
 
-## Decisions still open
+## Implemented conventions
 
-- Final flag conventions and output/error contracts.
-- Exact structured stdin format and selection behavior for multiple outputs.
-- Authentication and output filename behavior for the first command.
+Generation flags come from the catalog; complex arrays accept JSON. Required
+inputs fail locally with examples. File and YouTube source modes are inferred
+when omitted. Clip ends remain explicit; no media-probing dependency is needed.
 
-## First implementation slice
+`--format text|json` defaults to text. JSON results include `id`, project `type`,
+`status`, and `outputs`; failed operations with a known ID also include `error`.
+Output references carry URLs, optional absolute local paths, and media types.
+Explicit stdin consumes this result contract. Single-file flags reject multiple
+outputs; repeated-file flags consume all compatible outputs.
 
-Implement one image-generation command end to end: flags, required-input
-handling, API call, polling, download, and JSON output. Use it to validate the
-catalog and runner boundaries before expanding API coverage. Do not copy the old
-prototype wholesale.
+Authentication uses an environment key or saved config. Login reads the key from
+the environment or explicit stdin, validates it, and saves atomically. Downloads
+use project-specific filenames or `--output`; existing files are never replaced.
+
+The first image generation/edit slice established these boundaries before the
+catalog expanded to every current generation API. Account, saved items, uploads,
+and face detection complete the API coverage.
 
 ## Reference
 
