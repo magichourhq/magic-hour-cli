@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/magichourhq/cli/internal/catalog"
 )
 
 var extensions = map[string]string{
@@ -92,10 +94,59 @@ func (r Runner) Upload(ctx context.Context, value, expected string) (string, err
 	return item.Path, nil
 }
 
-func cloneValues(values map[string][]string) map[string][]string {
-	copy := make(map[string][]string, len(values))
-	for k, v := range values {
-		copy[k] = append([]string{}, v...)
+func (r Runner) prepareFiles(ctx context.Context, op catalog.Operation, body map[string]any) error {
+	// Run a read-only validation pass before any presigned URLs or uploads.
+	for _, upload := range []bool{false, true} {
+		for _, file := range op.Files {
+			_, err := visitFiles(body, file.Path, func(value string) (string, error) {
+				if upload {
+					return r.Upload(ctx, value, file.Kind)
+				}
+				_, _, err := inspectInput(value, file.Kind)
+				return value, err
+			})
+			if err != nil {
+				return fmt.Errorf("%s: %w", strings.Join(file.Path, "."), err)
+			}
+		}
 	}
-	return copy
+	return nil
+}
+
+func visitFiles(node any, path []string, fn func(string) (string, error)) (any, error) {
+	if len(path) == 0 {
+		value, ok := node.(string)
+		if !ok {
+			return nil, fmt.Errorf("file reference must be a string")
+		}
+		return fn(value)
+	}
+	if path[0] == "*" {
+		items, ok := node.([]any)
+		if !ok {
+			return nil, fmt.Errorf("file references must be an array")
+		}
+		for i, v := range items {
+			next, err := visitFiles(v, path[1:], fn)
+			if err != nil {
+				return nil, err
+			}
+			items[i] = next
+		}
+		return items, nil
+	}
+	object, ok := node.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("file parent must be an object")
+	}
+	value, exists := object[path[0]]
+	if !exists {
+		return node, nil
+	}
+	next, err := visitFiles(value, path[1:], fn)
+	if err != nil {
+		return nil, err
+	}
+	object[path[0]] = next
+	return object, nil
 }

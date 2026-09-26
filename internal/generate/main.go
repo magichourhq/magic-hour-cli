@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"go/format"
 	"os"
+	"regexp"
 	"slices"
 	"sort"
 	"strings"
@@ -18,6 +19,7 @@ import (
 
 type metadata struct {
 	ID, Group, Name, Kind, Example string
+	Files                          map[string]string
 	Overrides                      map[string]struct {
 		Flag     string `json:"flag"`
 		Default  string `json:"default"`
@@ -36,6 +38,9 @@ type schema struct {
 	Minimum, Maximum                         json.Number
 	MinLength, MaxLength, MinItems, MaxItems int
 	Deprecated                               bool
+	MultipleOf                               json.Number
+	Pattern, Format                          string
+	Nullable                                 bool
 }
 
 func main() {
@@ -92,6 +97,10 @@ func generate(specPath, metaPath, outPath string) error {
 				if err != nil {
 					return fmt.Errorf("%s: %w", m.ID, err)
 				}
+				rule, err := compile(op.RequestBody.Content["application/json"].Schema)
+				if err != nil {
+					return fmt.Errorf("%s: %w", m.ID, err)
+				}
 				used := map[string]bool{}
 				flags := map[string]bool{}
 				for i := range fields {
@@ -121,6 +130,31 @@ func generate(specPath, metaPath, outPath string) error {
 				for _, field := range fields {
 					literal := strings.TrimPrefix(fmt.Sprintf("%#v", field), "catalog.Field")
 					fmt.Fprintf(&out, "%s,\n", literal)
+				}
+				fmt.Fprintln(&out, "},Schema:")
+				writeRule(&out, rule)
+				fmt.Fprintln(&out, ",Files: []FileInput{")
+				for _, f := range fields {
+					if f.FileKind == "" {
+						continue
+					}
+					p := f.Path
+					if f.Type == "array" {
+						p = append(append([]string{}, p...), "*")
+					}
+					fmt.Fprintf(&out, "{Path:%#v,Kind:%q},\n", p, f.FileKind)
+				}
+				paths := make([]string, 0, len(m.Files))
+				for p := range m.Files {
+					paths = append(paths, p)
+				}
+				sort.Strings(paths)
+				for _, p := range paths {
+					parts := strings.Split(p, ".")
+					if !filePathExists(rule, parts) {
+						return fmt.Errorf("%s: stale file path %s", m.ID, p)
+					}
+					fmt.Fprintf(&out, "{Path:%#v,Kind:%q},\n", parts, m.Files[p])
 				}
 				fmt.Fprintln(&out, "}},")
 			}
@@ -153,14 +187,11 @@ func flatten(raw json.RawMessage, path []string, required bool) ([]catalog.Field
 		if strings.HasPrefix(key, "x-") {
 			continue
 		}
-		if !slices.Contains([]string{"type", "description", "properties", "required", "items", "enum", "minimum", "maximum", "minLength", "maxLength", "minItems", "maxItems", "deprecated", "example", "examples", "default", "title"}, key) {
+		if !slices.Contains([]string{"type", "description", "properties", "required", "items", "enum", "minimum", "maximum", "minLength", "maxLength", "minItems", "maxItems", "deprecated", "example", "examples", "default", "title", "format", "nullable", "multipleOf", "pattern"}, key) {
 			return nil, fmt.Errorf("%s: unsupported schema keyword %s", strings.Join(path, "."), key)
 		}
 	}
 	if s.Type == "object" {
-		if len(path) > 0 && !required {
-			return nil, fmt.Errorf("%s: optional objects need explicit handling", strings.Join(path, "."))
-		}
 		var fields []catalog.Field
 		names := make([]string, 0, len(s.Properties))
 		for name := range s.Properties {
@@ -183,16 +214,110 @@ func flatten(raw json.RawMessage, path []string, required bool) ([]catalog.Field
 	switch s.Type {
 	case "string", "integer", "number", "boolean":
 	case "array":
+		var item schema
+		if err := json.Unmarshal(s.Items, &item); err != nil {
+			return nil, err
+		}
 		items, err := flatten(s.Items, path, false)
 		if err != nil {
 			return nil, err
 		}
-		if len(items) != 1 || items[0].Type != "string" || len(items[0].Enum) > 0 || len(s.Enum) > 0 {
-			return nil, fmt.Errorf("%s: only arrays of strings are supported", f.Flag)
+		if item.Type == "string" && len(items) == 1 && len(items[0].Enum) == 0 && len(s.Enum) == 0 {
+			f.MinLength, f.MaxLength = items[0].MinLength, items[0].MaxLength
+		} else {
+			f.Type = "json"
 		}
-		f.MinLength, f.MaxLength = items[0].MinLength, items[0].MaxLength
 	default:
 		return nil, fmt.Errorf("%s: unsupported type %q", f.Flag, s.Type)
 	}
 	return []catalog.Field{f}, nil
+}
+
+func compile(raw json.RawMessage) (catalog.Rule, error) {
+	var s schema
+	if err := json.Unmarshal(raw, &s); err != nil {
+		return catalog.Rule{}, err
+	}
+	if s.Pattern != "" {
+		if _, err := regexp.Compile(s.Pattern); err != nil {
+			return catalog.Rule{}, err
+		}
+	}
+	if !slices.Contains([]string{"", "float", "uri"}, s.Format) {
+		return catalog.Rule{}, fmt.Errorf("unsupported format %s", s.Format)
+	}
+	r := catalog.Rule{Type: s.Type, Required: s.Required, Enum: s.Enum, Minimum: string(s.Minimum), Maximum: string(s.Maximum), MultipleOf: string(s.MultipleOf), MinLength: s.MinLength, MaxLength: s.MaxLength, MinItems: s.MinItems, MaxItems: s.MaxItems, Pattern: s.Pattern, Format: s.Format, Nullable: s.Nullable}
+	if len(s.Items) > 0 {
+		child, err := compile(s.Items)
+		if err != nil {
+			return r, err
+		}
+		r.Item = &child
+	}
+	if s.Type == "object" {
+		r.Properties = map[string]catalog.Rule{}
+		for name, raw := range s.Properties {
+			var child schema
+			if err := json.Unmarshal(raw, &child); err != nil {
+				return r, err
+			}
+			if child.Deprecated {
+				if slices.Contains(s.Required, name) {
+					return r, fmt.Errorf("required deprecated field %s", name)
+				}
+				continue
+			}
+			c, err := compile(raw)
+			if err != nil {
+				return r, err
+			}
+			r.Properties[name] = c
+		}
+	}
+	return r, nil
+}
+
+func writeRule(out *bytes.Buffer, r catalog.Rule) {
+	var enum strings.Builder
+	enum.WriteString("[]any{")
+	for _, value := range r.Enum {
+		if number, ok := value.(float64); ok {
+			fmt.Fprintf(&enum, "float64(%v),", number)
+		} else {
+			fmt.Fprintf(&enum, "%#v,", value)
+		}
+	}
+	enum.WriteString("}")
+	fmt.Fprintf(out, "Rule{Type:%q,Required:%#v,Enum:%s,Minimum:%q,Maximum:%q,MultipleOf:%q,MinLength:%d,MaxLength:%d,MinItems:%d,MaxItems:%d,Pattern:%q,Format:%q,Nullable:%t,", r.Type, r.Required, enum.String(), r.Minimum, r.Maximum, r.MultipleOf, r.MinLength, r.MaxLength, r.MinItems, r.MaxItems, r.Pattern, r.Format, r.Nullable)
+	if r.Item != nil {
+		fmt.Fprint(out, "Item: &")
+		writeRule(out, *r.Item)
+		fmt.Fprint(out, ",")
+	}
+	if r.Properties != nil {
+		fmt.Fprintln(out, "Properties: map[string]Rule{")
+		keys := make([]string, 0, len(r.Properties))
+		for k := range r.Properties {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			fmt.Fprintf(out, "%q:", k)
+			writeRule(out, r.Properties[k])
+			fmt.Fprintln(out, ",")
+		}
+		fmt.Fprint(out, "},")
+	}
+	fmt.Fprint(out, "}")
+}
+
+func filePathExists(r catalog.Rule, path []string) bool {
+	if len(path) == 0 {
+		return r.Type == "string"
+	}
+	if path[0] == "*" {
+		return r.Item != nil && filePathExists(*r.Item, path[1:])
+	}
+	child, ok := r.Properties[path[0]]
+	return ok && filePathExists(child, path[1:])
 }

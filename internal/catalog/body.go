@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"slices"
@@ -11,6 +12,7 @@ import (
 // Body validates flag values before uploads or generation can have side effects.
 // Only CLI defaults are materialized; unspecified optional fields stay omitted.
 func (op Operation) Body(values map[string][]string) (map[string]any, error) {
+	values = op.inferInputs(values)
 	body := map[string]any{}
 	known := map[string]bool{}
 	for _, f := range op.Fields {
@@ -29,7 +31,11 @@ func (op Operation) Body(values map[string][]string) (map[string]any, error) {
 			return nil, fmt.Errorf("--%s expects one value", f.Flag)
 		}
 		var value any
-		if f.Type == "array" {
+		if f.Type == "json" {
+			if err := json.Unmarshal([]byte(v[0]), &value); err != nil {
+				return nil, fmt.Errorf("--%s expects JSON: %w", f.Flag, err)
+			}
+		} else if f.Type == "array" {
 			if len(v) < f.MinItems || (f.MaxItems > 0 && len(v) > f.MaxItems) {
 				return nil, fmt.Errorf("--%s has an invalid number of items (min %d, max %d)", f.Flag, f.MinItems, f.MaxItems)
 			}
@@ -38,7 +44,11 @@ func (op Operation) Body(values map[string][]string) (map[string]any, error) {
 					return nil, err
 				}
 			}
-			value = v
+			items := make([]any, len(v))
+			for i, item := range v {
+				items[i] = item
+			}
+			value = items
 		} else {
 			var err error
 			value, err = f.scalar(v[0])
@@ -60,11 +70,21 @@ func (op Operation) Body(values map[string][]string) (map[string]any, error) {
 			return nil, fmt.Errorf("unknown input --%s", flag)
 		}
 	}
+	op.Schema.requiredObjects(body)
+	if err := op.Schema.validate(body, "input"); err != nil {
+		return nil, fmt.Errorf("%w\nExample: %s", err, op.Example)
+	}
+	if err := op.conditions(body); err != nil {
+		return nil, fmt.Errorf("%w\nExample: %s", err, op.Example)
+	}
 	return body, nil
 }
 
 func (f Field) scalar(s string) (any, error) {
 	if len(f.Enum) > 0 && !slices.Contains(f.Enum, s) {
+		if len(f.Enum) > 10 {
+			return nil, fmt.Errorf("invalid --%s value; use shell completion or mh schema for the %d choices", f.Flag, len(f.Enum))
+		}
 		return nil, fmt.Errorf("--%s must be one of %v", f.Flag, f.Enum)
 	}
 	switch f.Type {

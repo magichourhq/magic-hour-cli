@@ -52,31 +52,7 @@ func (r Runner) Generate(ctx context.Context, op catalog.Operation, values map[s
 	if err := ValidateOptions(opts, body); err != nil {
 		return result, err
 	}
-	for _, f := range op.Fields {
-		if f.FileKind == "" {
-			continue
-		}
-		for _, value := range values[f.Flag] {
-			if _, _, err := inspectInput(value, f.FileKind); err != nil {
-				return result, fmt.Errorf("--%s: %w", f.Flag, err)
-			}
-		}
-	}
-	prepared := cloneValues(values)
-	for _, f := range op.Fields {
-		if f.FileKind == "" {
-			continue
-		}
-		for i, value := range prepared[f.Flag] {
-			ref, err := r.Upload(ctx, value, f.FileKind)
-			if err != nil {
-				return result, err
-			}
-			prepared[f.Flag][i] = ref
-		}
-	}
-	body, err = op.Body(prepared)
-	if err != nil {
+	if err := r.prepareFiles(ctx, op, body); err != nil {
 		return result, err
 	}
 	r.note("Creating " + op.Kind + " project…")

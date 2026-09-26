@@ -4,10 +4,18 @@
     "group": "image",
     "name": "generate",
     "kind": "image",
-    "example": "mh image generate --prompt 'A cinematic mountain landscape'",
+    "example": "mh image generate --prompt 'A mountain landscape'",
     "overrides": {
-      "style.prompt": {"flag": "prompt"},
-      "image_count": {"flag": "count", "default": "1"}
+      "image_count": {
+        "flag": "count",
+        "default": "1"
+      },
+      "style.prompt": {
+        "flag": "prompt"
+      },
+      "style.tool": {
+        "flag": "tool"
+      }
     }
   },
   {
@@ -17,9 +25,679 @@
     "kind": "image",
     "example": "mh image edit --image photo.png --prompt 'Make it sunset'",
     "overrides": {
-      "style.prompt": {"flag": "prompt"},
-      "image_count": {"flag": "count", "default": "1"},
-      "assets.image_file_paths": {"flag": "image", "file_kind": "image", "required": true, "min_items": 1}
+      "image_count": {
+        "flag": "count",
+        "default": "1"
+      },
+      "style.prompt": {
+        "flag": "prompt"
+      },
+      "assets.image_file_paths": {
+        "flag": "image",
+        "file_kind": "image",
+        "required": true,
+        "min_items": 1
+      }
+    }
+  },
+  {
+    "id": "aiGifGenerator.createImage",
+    "group": "image",
+    "name": "gif",
+    "kind": "image",
+    "example": "mh image gif --prompt 'A dancing cat'",
+    "overrides": {
+      "style.prompt": {
+        "flag": "prompt"
+      }
+    }
+  },
+  {
+    "id": "aiImageUpscaler.createImage",
+    "group": "image",
+    "name": "upscale",
+    "kind": "image",
+    "example": "mh image upscale --image photo.png --scale-factor 2",
+    "overrides": {
+      "style.mode": {
+        "flag": "mode"
+      },
+      "style.prompt": {
+        "flag": "prompt"
+      },
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      }
+    }
+  },
+  {
+    "id": "imageBackgroundRemover.createImage",
+    "group": "image",
+    "name": "remove-background",
+    "kind": "image",
+    "example": "mh image remove-background --image photo.png",
+    "overrides": {
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      },
+      "assets.background_image_file_path": {
+        "flag": "background",
+        "file_kind": "image"
+      }
+    }
+  },
+  {
+    "id": "photoColorizer.createImage",
+    "group": "image",
+    "name": "colorize",
+    "kind": "image",
+    "example": "mh image colorize --image photo.png",
+    "overrides": {
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      }
+    }
+  },
+  {
+    "id": "faceSwapPhoto.createImage",
+    "group": "image",
+    "name": "face-swap",
+    "kind": "image",
+    "example": "mh image face-swap --target scene.png --source face.png",
+    "overrides": {
+      "assets.face_swap_mode": {
+        "flag": "face-swap-mode"
+      },
+      "assets.source_file_path": {
+        "flag": "source",
+        "file_kind": "image"
+      },
+      "assets.face_mappings": {
+        "flag": "face-mappings"
+      },
+      "assets.target_file_path": {
+        "flag": "target",
+        "file_kind": "image"
+      }
+    },
+    "files": {
+      "assets.face_mappings.*.new_face": "image"
+    }
+  },
+  {
+    "id": "headSwap.createImage",
+    "group": "image",
+    "name": "head-swap",
+    "kind": "image",
+    "example": "mh image head-swap --body body.png --head head.png",
+    "overrides": {
+      "assets.body_file_path": {
+        "flag": "body",
+        "file_kind": "image"
+      },
+      "assets.head_file_path": {
+        "flag": "head",
+        "file_kind": "image"
+      }
+    }
+  },
+  {
+    "id": "bodySwap.createImage",
+    "group": "image",
+    "name": "body-swap",
+    "kind": "image",
+    "example": "mh image body-swap --person person.png --scene scene.png --resolution 1k",
+    "overrides": {
+      "assets.person_file_path": {
+        "flag": "person",
+        "file_kind": "image"
+      },
+      "assets.scene_file_path": {
+        "flag": "scene",
+        "file_kind": "image"
+      }
+    }
+  },
+  {
+    "id": "aiFaceEditor.editImage",
+    "group": "image",
+    "name": "edit-face",
+    "kind": "image",
+    "example": "mh image edit-face --image photo.png --mouth-smile 20",
+    "overrides": {
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      },
+      "style.enhance_face": {
+        "flag": "enhance-face"
+      },
+      "style.eyebrow_direction": {
+        "flag": "eyebrow-direction"
+      },
+      "style.eye_gaze_horizontal": {
+        "flag": "eye-gaze-horizontal"
+      },
+      "style.eye_gaze_vertical": {
+        "flag": "eye-gaze-vertical"
+      },
+      "style.eye_open_ratio": {
+        "flag": "eye-open-ratio"
+      },
+      "style.lip_open_ratio": {
+        "flag": "lip-open-ratio"
+      },
+      "style.head_roll": {
+        "flag": "head-roll"
+      },
+      "style.mouth_grim": {
+        "flag": "mouth-grim"
+      },
+      "style.mouth_pout": {
+        "flag": "mouth-pout"
+      },
+      "style.mouth_purse": {
+        "flag": "mouth-purse"
+      },
+      "style.mouth_smile": {
+        "flag": "mouth-smile"
+      },
+      "style.mouth_position_horizontal": {
+        "flag": "mouth-position-horizontal"
+      },
+      "style.mouth_position_vertical": {
+        "flag": "mouth-position-vertical"
+      },
+      "style.head_pitch": {
+        "flag": "head-pitch"
+      },
+      "style.head_yaw": {
+        "flag": "head-yaw"
+      }
+    }
+  },
+  {
+    "id": "aiClothesChanger.createImage",
+    "group": "image",
+    "name": "change-clothes",
+    "kind": "image",
+    "example": "mh image change-clothes --person person.png --garment jacket.png",
+    "overrides": {
+      "assets.person_file_path": {
+        "flag": "person",
+        "file_kind": "image"
+      },
+      "assets.garment_file_path": {
+        "flag": "garment",
+        "file_kind": "image"
+      },
+      "assets.garment_type": {
+        "flag": "garment-type"
+      }
+    }
+  },
+  {
+    "id": "aiHeadshotGenerator.createImage",
+    "group": "image",
+    "name": "headshot",
+    "kind": "image",
+    "example": "mh image headshot --image photo.png",
+    "overrides": {
+      "style.prompt": {
+        "flag": "prompt"
+      },
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      }
+    }
+  },
+  {
+    "id": "aiMemeGenerator.createImage",
+    "group": "image",
+    "name": "meme",
+    "kind": "image",
+    "example": "mh image meme --topic 'Monday mornings' --template 'Drake Hotline Bling'",
+    "overrides": {
+      "style.topic": {
+        "flag": "topic"
+      },
+      "style.template": {
+        "flag": "template"
+      },
+      "style.searchWeb": {
+        "flag": "searchWeb"
+      }
+    }
+  },
+  {
+    "id": "aiQrCodeGenerator.createImage",
+    "group": "image",
+    "name": "qr-code",
+    "kind": "image",
+    "example": "mh image qr-code --content https://magichour.ai --art-style 'Watercolor'",
+    "overrides": {
+      "style.art_style": {
+        "flag": "art-style"
+      }
+    }
+  },
+  {
+    "id": "textToVideo.createVideo",
+    "group": "video",
+    "name": "generate",
+    "kind": "video",
+    "example": "mh video generate --prompt 'A mountain landscape' --end 5",
+    "overrides": {
+      "end_seconds": {
+        "flag": "end"
+      },
+      "style.prompt": {
+        "flag": "prompt"
+      }
+    },
+    "files": {
+      "references.*.file_path": "media"
+    }
+  },
+  {
+    "id": "imageToVideo.createVideo",
+    "group": "video",
+    "name": "from-image",
+    "kind": "video",
+    "example": "mh video from-image --image photo.png --end 5 --prompt 'Slow camera pan'",
+    "overrides": {
+      "end_seconds": {
+        "flag": "end"
+      },
+      "style.prompt": {
+        "flag": "prompt"
+      },
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      },
+      "assets.end_image_file_path": {
+        "flag": "end-image",
+        "file_kind": "image"
+      }
+    }
+  },
+  {
+    "id": "audioToVideo.createVideo",
+    "group": "video",
+    "name": "from-audio",
+    "kind": "video",
+    "example": "mh video from-audio --audio speech.mp3 --end 5",
+    "overrides": {
+      "start_seconds": {
+        "flag": "start",
+        "default": "0"
+      },
+      "end_seconds": {
+        "flag": "end"
+      },
+      "assets.audio_file_path": {
+        "flag": "audio",
+        "file_kind": "audio"
+      },
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      },
+      "style.prompt": {
+        "flag": "prompt"
+      }
+    }
+  },
+  {
+    "id": "aiVideoEditor.createVideo",
+    "group": "video",
+    "name": "edit",
+    "kind": "video",
+    "example": "mh video edit --video clip.mp4 --end 5 --prompt 'Make it sunset'",
+    "overrides": {
+      "start_seconds": {
+        "flag": "start",
+        "default": "0"
+      },
+      "end_seconds": {
+        "flag": "end"
+      },
+      "style.prompt": {
+        "flag": "prompt"
+      },
+      "assets.video_file_path": {
+        "flag": "video",
+        "file_kind": "video"
+      }
+    }
+  },
+  {
+    "id": "videoToVideo.createVideo",
+    "group": "video",
+    "name": "restyle",
+    "kind": "video",
+    "example": "mh video restyle --video clip.mp4 --end 5 --art-style Watercolor",
+    "overrides": {
+      "start_seconds": {
+        "flag": "start",
+        "default": "0"
+      },
+      "end_seconds": {
+        "flag": "end"
+      },
+      "style.art_style": {
+        "flag": "art-style"
+      },
+      "style.version": {
+        "flag": "style-version"
+      },
+      "style.prompt_type": {
+        "flag": "prompt-type"
+      },
+      "style.prompt": {
+        "flag": "prompt"
+      },
+      "style.model": {
+        "flag": "model"
+      },
+      "assets.video_source": {
+        "flag": "video-source"
+      },
+      "assets.video_file_path": {
+        "flag": "video",
+        "file_kind": "video"
+      },
+      "assets.youtube_url": {
+        "flag": "youtube-url"
+      }
+    }
+  },
+  {
+    "id": "animation.createVideo",
+    "group": "video",
+    "name": "animate",
+    "kind": "video",
+    "example": "mh video animate --end 5 --fps 12 --height 512 --width 512 --art-style '3D Render' --camera-effect 'Simple Zoom In' --prompt-type custom --prompt 'A forest' --transition-speed 5",
+    "overrides": {
+      "end_seconds": {
+        "flag": "end"
+      },
+      "style.art_style": {
+        "flag": "art-style"
+      },
+      "style.art_style_custom": {
+        "flag": "art-style-custom"
+      },
+      "style.camera_effect": {
+        "flag": "camera-effect"
+      },
+      "style.prompt_type": {
+        "flag": "prompt-type"
+      },
+      "style.prompt": {
+        "flag": "prompt"
+      },
+      "style.transition_speed": {
+        "flag": "transition-speed"
+      },
+      "assets.audio_source": {
+        "flag": "audio-source"
+      },
+      "assets.audio_file_path": {
+        "flag": "audio",
+        "file_kind": "audio"
+      },
+      "assets.youtube_url": {
+        "flag": "youtube-url"
+      },
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      }
+    }
+  },
+  {
+    "id": "aiTalkingPhoto.createTalkingPhoto",
+    "group": "video",
+    "name": "talking-photo",
+    "kind": "video",
+    "example": "mh video talking-photo --image portrait.png --audio speech.mp3 --end 5",
+    "overrides": {
+      "start_seconds": {
+        "flag": "start",
+        "default": "0"
+      },
+      "end_seconds": {
+        "flag": "end"
+      },
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      },
+      "assets.audio_file_path": {
+        "flag": "audio",
+        "file_kind": "audio"
+      },
+      "style.generation_mode": {
+        "flag": "generation-mode"
+      },
+      "style.prompt": {
+        "flag": "prompt"
+      }
+    }
+  },
+  {
+    "id": "lipSync.createVideo",
+    "group": "video",
+    "name": "lip-sync",
+    "kind": "video",
+    "example": "mh video lip-sync --video clip.mp4 --audio speech.mp3 --end 5",
+    "overrides": {
+      "start_seconds": {
+        "flag": "start",
+        "default": "0"
+      },
+      "end_seconds": {
+        "flag": "end"
+      },
+      "assets.audio_file_path": {
+        "flag": "audio",
+        "file_kind": "audio"
+      },
+      "assets.video_source": {
+        "flag": "video-source"
+      },
+      "assets.video_file_path": {
+        "flag": "video",
+        "file_kind": "video"
+      },
+      "assets.youtube_url": {
+        "flag": "youtube-url"
+      },
+      "style.generation_mode": {
+        "flag": "generation-mode"
+      }
+    }
+  },
+  {
+    "id": "faceSwap.createVideo",
+    "group": "video",
+    "name": "face-swap",
+    "kind": "video",
+    "example": "mh video face-swap --video clip.mp4 --image face.png --end 5",
+    "overrides": {
+      "start_seconds": {
+        "flag": "start",
+        "default": "0"
+      },
+      "end_seconds": {
+        "flag": "end"
+      },
+      "style.version": {
+        "flag": "style-version"
+      },
+      "assets.face_swap_mode": {
+        "flag": "face-swap-mode"
+      },
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      },
+      "assets.face_mappings": {
+        "flag": "face-mappings"
+      },
+      "assets.video_source": {
+        "flag": "video-source"
+      },
+      "assets.video_file_path": {
+        "flag": "video",
+        "file_kind": "video"
+      },
+      "assets.youtube_url": {
+        "flag": "youtube-url"
+      }
+    },
+    "files": {
+      "assets.face_mappings.*.new_face": "image"
+    }
+  },
+  {
+    "id": "characterReplace.createVideo",
+    "group": "video",
+    "name": "replace-character",
+    "kind": "video",
+    "example": "mh video replace-character --video clip.mp4 --image character.png --end 5",
+    "overrides": {
+      "start_seconds": {
+        "flag": "start",
+        "default": "0"
+      },
+      "end_seconds": {
+        "flag": "end"
+      },
+      "assets.video_file_path": {
+        "flag": "video",
+        "file_kind": "video"
+      },
+      "assets.image_file_path": {
+        "flag": "image",
+        "file_kind": "image"
+      },
+      "style.mode": {
+        "flag": "mode"
+      },
+      "style.selection_mode": {
+        "flag": "selection-mode"
+      },
+      "style.points": {
+        "flag": "points"
+      }
+    }
+  },
+  {
+    "id": "aiVideoTranslator.createVideo",
+    "group": "video",
+    "name": "translate",
+    "kind": "video",
+    "example": "mh video translate --video clip.mp4 --end 5 --target-language Spanish",
+    "overrides": {
+      "start_seconds": {
+        "flag": "start",
+        "default": "0"
+      },
+      "end_seconds": {
+        "flag": "end"
+      },
+      "assets.video_file_path": {
+        "flag": "video",
+        "file_kind": "video"
+      }
+    }
+  },
+  {
+    "id": "autoSubtitleGenerator.createVideo",
+    "group": "video",
+    "name": "subtitle",
+    "kind": "video",
+    "example": "mh video subtitle --video clip.mp4 --end 5",
+    "overrides": {
+      "start_seconds": {
+        "flag": "start",
+        "default": "0"
+      },
+      "end_seconds": {
+        "flag": "end"
+      },
+      "assets.video_file_path": {
+        "flag": "video",
+        "file_kind": "video"
+      },
+      "style.template": {
+        "flag": "template"
+      },
+      "style.custom_config.font": {
+        "flag": "custom-config-font"
+      },
+      "style.custom_config.font_size": {
+        "flag": "custom-config-font-size"
+      },
+      "style.custom_config.font_style": {
+        "flag": "custom-config-font-style"
+      },
+      "style.custom_config.text_color": {
+        "flag": "custom-config-text-color"
+      },
+      "style.custom_config.highlighted_text_color": {
+        "flag": "custom-config-highlighted-text-color"
+      },
+      "style.custom_config.stroke_color": {
+        "flag": "custom-config-stroke-color"
+      },
+      "style.custom_config.stroke_width": {
+        "flag": "custom-config-stroke-width"
+      },
+      "style.custom_config.vertical_position": {
+        "flag": "custom-config-vertical-position"
+      },
+      "style.custom_config.horizontal_position": {
+        "flag": "custom-config-horizontal-position"
+      }
+    }
+  },
+  {
+    "id": "aiVoiceGenerator.createAudio",
+    "group": "audio",
+    "name": "speech",
+    "kind": "audio",
+    "example": "mh audio speech --text 'Hello world' --voice 'Morgan Freeman'",
+    "overrides": {
+      "style.prompt": {
+        "flag": "text"
+      },
+      "style.voice_name": {
+        "flag": "voice"
+      }
+    }
+  },
+  {
+    "id": "aiVoiceCloner.createAudio",
+    "group": "audio",
+    "name": "clone-voice",
+    "kind": "audio",
+    "example": "mh audio clone-voice --text 'Hello world' --audio voice.wav",
+    "overrides": {
+      "assets.audio_file_path": {
+        "flag": "audio",
+        "file_kind": "audio"
+      },
+      "style.prompt": {
+        "flag": "text"
+      }
     }
   }
 ]

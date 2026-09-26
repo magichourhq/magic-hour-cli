@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/magichourhq/cli/internal/catalog"
@@ -67,9 +68,15 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 			help += " (required)"
 		}
 		if len(f.Enum) > 0 {
-			help += "; choices: " + strings.Join(f.Enum, ", ")
+			if len(f.Enum) <= 10 {
+				help += "; choices: " + strings.Join(f.Enum, ", ")
+			} else {
+				help += fmt.Sprintf("; %d choices (use completion or mh schema %s %s)", len(f.Enum), op.Group, op.Name)
+			}
 		}
-		if f.Type == "array" {
+		if f.Type == "boolean" {
+			cmd.Flags().Bool(f.Flag, f.Default == "true", help)
+		} else if f.Type == "array" {
 			cmd.Flags().StringArray(f.Flag, nil, help)
 		} else {
 			cmd.Flags().String(f.Flag, f.Default, help)
@@ -92,7 +99,10 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 			if !cmd.Flags().Changed(f.Flag) {
 				continue
 			}
-			if f.Type == "array" {
+			if f.Type == "boolean" {
+				v, _ := cmd.Flags().GetBool(f.Flag)
+				values[f.Flag] = []string{strconv.FormatBool(v)}
+			} else if f.Type == "array" {
 				values[f.Flag], _ = cmd.Flags().GetStringArray(f.Flag)
 			} else {
 				s, _ := cmd.Flags().GetString(f.Flag)

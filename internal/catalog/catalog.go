@@ -4,14 +4,21 @@ package catalog
 //go:generate go run ../generate -spec ../../api/openapi.json -metadata ../../api/cli.json -out catalog_gen.go
 
 type Operation struct {
-	ID      string  `json:"id"`
-	Group   string  `json:"group"`
-	Name    string  `json:"name"`
-	Kind    string  `json:"kind"`
-	Path    string  `json:"path"`
-	Summary string  `json:"summary"`
-	Example string  `json:"example"`
-	Fields  []Field `json:"fields"`
+	ID      string      `json:"id"`
+	Group   string      `json:"group"`
+	Name    string      `json:"name"`
+	Kind    string      `json:"kind"`
+	Path    string      `json:"path"`
+	Summary string      `json:"summary"`
+	Example string      `json:"example"`
+	Fields  []Field     `json:"fields"`
+	Schema  Rule        `json:"schema"`
+	Files   []FileInput `json:"files,omitempty"`
+}
+
+type FileInput struct {
+	Path []string `json:"path"`
+	Kind string   `json:"kind"`
 }
 
 type Field struct {
