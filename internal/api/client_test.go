@@ -1,11 +1,14 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 type roundTripFunc func(*http.Request) (*http.Response, error)
@@ -46,5 +49,29 @@ func TestProjectPathRejectsUnsafeIDs(t *testing.T) {
 		if _, err := ProjectPath("image", id); err == nil {
 			t.Errorf("accepted unsafe project ID %q", id)
 		}
+	}
+}
+
+func TestTransferUsesCommandContextInsteadOfAPIRequestTimeout(t *testing.T) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.Header.Get("Authorization") != "" {
+			t.Error("asset request included API credentials")
+		}
+		time.Sleep(20 * time.Millisecond)
+		_, _ = io.WriteString(w, "image")
+	}))
+	defer server.Close()
+
+	client := New("test-key")
+	client.http = server.Client()
+	client.http.Timeout = time.Millisecond
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	var output bytes.Buffer
+	if err := client.Transfer(ctx, http.MethodGet, server.URL, nil, 0, &output); err != nil {
+		t.Fatal(err)
+	}
+	if output.String() != "image" {
+		t.Fatalf("unexpected asset body %q", output.String())
 	}
 }
