@@ -26,6 +26,8 @@ archives:
       - completions/*
 checksum:
   name_template: checksums.txt
+changelog:
+  use: github-native
 release:
   prerelease: auto
   github:
