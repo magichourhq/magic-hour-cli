@@ -22,6 +22,7 @@ type metadata struct {
 		Flag     string `json:"flag"`
 		Default  string `json:"default"`
 		FileKind string `json:"file_kind"`
+		Help     string `json:"help"`
 		Required bool   `json:"required"`
 		MinItems int    `json:"min_items"`
 	}
@@ -103,6 +104,9 @@ func generate(specPath, metaPath, outPath string) error {
 							f.Flag = override.Flag
 						}
 						f.Default, f.FileKind = override.Default, override.FileKind
+						if override.Help != "" {
+							f.Help = override.Help
+						}
 						f.Required = f.Required || override.Required
 						f.MinItems = max(f.MinItems, override.MinItems)
 					}
