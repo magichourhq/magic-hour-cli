@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/magichourhq/cli/internal/api"
-	"github.com/magichourhq/cli/internal/config"
-	"github.com/magichourhq/cli/internal/workflow"
+	"github.com/magichourhq/magic-hour-cli/internal/api"
+	"github.com/magichourhq/magic-hour-cli/internal/config"
+	"github.com/magichourhq/magic-hour-cli/internal/workflow"
 	"github.com/spf13/cobra"
 )
 

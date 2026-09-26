@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/magichourhq/cli/internal/api"
-	"github.com/magichourhq/cli/internal/catalog"
+	"github.com/magichourhq/magic-hour-cli/internal/api"
+	"github.com/magichourhq/magic-hour-cli/internal/catalog"
 )
 
 type transportFunc func(*http.Request) (*http.Response, error)

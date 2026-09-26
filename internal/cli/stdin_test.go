@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/magichourhq/cli/internal/catalog"
+	"github.com/magichourhq/magic-hour-cli/internal/catalog"
 )
 
 type failReader struct{}
