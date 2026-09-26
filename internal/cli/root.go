@@ -1,0 +1,120 @@
+package cli
+
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+
+	"github.com/magichourhq/cli/internal/catalog"
+	"github.com/spf13/cobra"
+)
+
+func New(version string) *cobra.Command {
+	root := &cobra.Command{Use: "mh", Short: "Generate images, video, and audio with Magic Hour", Version: version, SilenceUsage: true, SilenceErrors: true}
+	var format string
+	root.PersistentFlags().StringVar(&format, "format", "text", "Result format: text or json")
+	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if format != "text" && format != "json" {
+			return fmt.Errorf("--format must be text or json")
+		}
+		return nil
+	}
+	root.RegisterFlagCompletionFunc("format", choices([]string{"text", "json"}))
+	groups := map[string]*cobra.Command{}
+	for _, op := range catalog.Operations {
+		group := groups[op.Group]
+		if group == nil {
+			group = &cobra.Command{Use: op.Group, Short: "Create and manage " + op.Kind + " projects"}
+			groups[op.Group] = group
+			root.AddCommand(group)
+		}
+		group.AddCommand(operationCommand(op))
+	}
+	root.AddCommand(&cobra.Command{Use: "schema [group command]", Short: "Print generated command definitions as JSON", Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 0 && len(args) != 2 {
+			return fmt.Errorf("usage: mh schema [group command]")
+		}
+		return nil
+	}, RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return writeJSON(cmd, catalog.Operations)
+		}
+		for _, op := range catalog.Operations {
+			if op.Group == args[0] && op.Name == args[1] {
+				return writeJSON(cmd, op)
+			}
+		}
+		return fmt.Errorf("unknown command %s", strings.Join(args, " "))
+	}})
+	root.AddCommand(&cobra.Command{Use: "version", Short: "Print CLI version", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, args []string) error {
+		_, err := fmt.Fprintln(cmd.OutOrStdout(), version)
+		return err
+	}})
+	return root
+}
+
+func operationCommand(op catalog.Operation) *cobra.Command {
+	cmd := &cobra.Command{Use: op.Name, Short: op.Summary, Example: op.Example, Args: cobra.NoArgs}
+	var dryRun bool
+	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate inputs and print the request without making API calls")
+	for _, f := range op.Fields {
+		help := f.Help
+		if f.Required {
+			help += " (required)"
+		}
+		if len(f.Enum) > 0 {
+			help += "; choices: " + strings.Join(f.Enum, ", ")
+		}
+		if f.Type == "array" {
+			cmd.Flags().StringArray(f.Flag, nil, help)
+		} else {
+			cmd.Flags().String(f.Flag, f.Default, help)
+		}
+		if len(f.Enum) > 0 {
+			cmd.RegisterFlagCompletionFunc(f.Flag, choices(f.Enum))
+		} else if f.FileKind == "" {
+			cmd.RegisterFlagCompletionFunc(f.Flag, choices(nil))
+		}
+	}
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		values := map[string][]string{}
+		for _, f := range op.Fields {
+			if !cmd.Flags().Changed(f.Flag) {
+				continue
+			}
+			if f.Type == "array" {
+				values[f.Flag], _ = cmd.Flags().GetStringArray(f.Flag)
+			} else {
+				s, _ := cmd.Flags().GetString(f.Flag)
+				values[f.Flag] = []string{s}
+			}
+		}
+		body, err := op.Body(values)
+		if err != nil {
+			return err
+		}
+		if dryRun {
+			return writeJSON(cmd, map[string]any{"method": "POST", "path": op.Path, "body": body})
+		}
+		return fmt.Errorf("API execution is not available in this build; use --dry-run to inspect the request")
+	}
+	return cmd
+}
+
+func choices(values []string) func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
+	return func(_ *cobra.Command, _ []string, prefix string) ([]string, cobra.ShellCompDirective) {
+		var matches []string
+		for _, value := range values {
+			if strings.HasPrefix(value, prefix) {
+				matches = append(matches, value)
+			}
+		}
+		return matches, cobra.ShellCompDirectiveNoFileComp
+	}
+}
+
+func writeJSON(cmd *cobra.Command, value any) error {
+	enc := json.NewEncoder(cmd.OutOrStdout())
+	enc.SetIndent("", "  ")
+	return enc.Encode(value)
+}

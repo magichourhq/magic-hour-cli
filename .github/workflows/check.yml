@@ -1,0 +1,19 @@
+name: Check
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go generate ./...
+      - run: git diff --exit-code
+      - run: go vet ./...
+      - run: go test ./...
+      - run: go build ./...
+      - run: GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o /tmp/mh.exe ./cmd/mh
+      - run: GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o /tmp/mh-darwin ./cmd/mh

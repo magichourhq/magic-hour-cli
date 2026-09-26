@@ -1,0 +1,25 @@
+[
+  {
+    "id": "aiImageGenerator.createImage",
+    "group": "image",
+    "name": "generate",
+    "kind": "image",
+    "example": "mh image generate --prompt 'A cinematic mountain landscape'",
+    "overrides": {
+      "style.prompt": {"flag": "prompt"},
+      "image_count": {"flag": "count", "default": "1"}
+    }
+  },
+  {
+    "id": "aiImageEditor.createImage",
+    "group": "image",
+    "name": "edit",
+    "kind": "image",
+    "example": "mh image edit --image photo.png --prompt 'Make it sunset'",
+    "overrides": {
+      "style.prompt": {"flag": "prompt"},
+      "image_count": {"flag": "count", "default": "1"},
+      "assets.image_file_paths": {"flag": "image", "file_kind": "image", "required": true, "min_items": 1}
+    }
+  }
+]
