@@ -42,7 +42,8 @@ bucket, or cross-repository publishing secret is required. Its token must be abl
 to update the generated installer paths on main. If branch rules disallow that,
 open a PR containing `dist/mh.rb` → `Formula/mh.rb` and `dist/scoop/mh.json` →
 `bucket/mh.json` after the release instead of permitting direct installer updates.
-Prerelease tags publish archives but do not replace the stable installer entries.
+Prerelease tags publish GitHub prereleases but do not replace stable installer
+entries. Older stable tags also leave installers on the newest stable version.
 
 After the first public stable release:
 

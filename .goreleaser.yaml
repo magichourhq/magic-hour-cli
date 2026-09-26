@@ -36,6 +36,7 @@ snapshot:
 changelog:
   use: github-native
 release:
+  prerelease: auto
   github:
     owner: magichourhq
     name: cli
