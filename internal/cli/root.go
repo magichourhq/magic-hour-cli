@@ -12,7 +12,7 @@ import (
 )
 
 func New(version string) *cobra.Command {
-	root := &cobra.Command{Use: "mh", Short: "Generate images, video, and audio with Magic Hour", Version: version, SilenceUsage: true, SilenceErrors: true}
+	root := &cobra.Command{Use: "mh", Short: "Generate and edit images with Magic Hour", Version: version, SilenceUsage: true, SilenceErrors: true}
 	var format string
 	root.PersistentFlags().StringVar(&format, "format", "text", "Result format: text or json")
 	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
@@ -62,12 +62,19 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 	var dryRun bool
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate inputs and print the request without making API calls")
 	for _, f := range op.Fields {
-		help := f.Help
+		help := strings.ReplaceAll(f.Help, "`", "'")
+		if len(f.Enum) > 0 {
+			help = strings.TrimSuffix(help, ".")
+		}
 		if f.Required {
 			help += " (required)"
 		}
 		if len(f.Enum) > 0 {
-			help += "; choices: " + strings.Join(f.Enum, ", ")
+			if len(f.Enum) <= 10 {
+				help += "; choices: " + strings.Join(f.Enum, ", ")
+			} else {
+				help += fmt.Sprintf("; %d choices (use completion or mh schema %s %s)", len(f.Enum), op.Group, op.Name)
+			}
 		}
 		if f.Type == "array" {
 			cmd.Flags().StringArray(f.Flag, nil, help)

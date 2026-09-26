@@ -50,3 +50,33 @@ func TestImageGenerateRejectsInvalidInputs(t *testing.T) {
 		})
 	}
 }
+
+func TestImageHelpShowsUsableInputs(t *testing.T) {
+	for _, tc := range []struct {
+		args  []string
+		want  []string
+		avoid []string
+	}{
+		{[]string{"--help"}, []string{"Generate and edit images with Magic Hour"}, []string{"video, and audio"}},
+		{[]string{"image", "generate", "--help"}, []string{"--aspect-ratio string", "14 choices (use completion", "35 choices (use completion"}, []string{"--aspect-ratio 1:1", "nano-banana-2, gpt-image"}},
+		{[]string{"image", "edit", "--help"}, []string{"--image stringArray", "repeat for multiple images", "Use - for piped mh JSON"}, []string{"This value is either"}},
+	} {
+		cmd := New("test")
+		var output bytes.Buffer
+		cmd.SetOut(&output)
+		cmd.SetArgs(tc.args)
+		if err := cmd.Execute(); err != nil {
+			t.Fatal(err)
+		}
+		for _, want := range tc.want {
+			if !strings.Contains(output.String(), want) {
+				t.Errorf("%v help missing %q", tc.args, want)
+			}
+		}
+		for _, avoid := range tc.avoid {
+			if strings.Contains(output.String(), avoid) {
+				t.Errorf("%v help contains %q", tc.args, avoid)
+			}
+		}
+	}
+}

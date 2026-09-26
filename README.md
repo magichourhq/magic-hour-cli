@@ -1,8 +1,9 @@
 # Magic Hour CLI
 
-Generate images, video, and audio from the terminal with `mh`.
+Generate and edit images from the terminal with `mh`.
 
-Fresh implementation. The planned design combines Go command definitions generated from OpenAPI with shared upload, generation, polling, and download flows. Commands support human-readable and machine-readable output, with explicit piping for composition. No interactive prompts in v1.
+Commands are generated from OpenAPI and share upload, polling, and download
+flows. Results support text and JSON output, with explicit piping between commands.
 
 Under development; no releases yet. `image generate` and `image edit` support
 API execution, local uploads, polling, downloads, and explicit JSON piping.

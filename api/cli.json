@@ -19,7 +19,7 @@
     "overrides": {
       "style.prompt": {"flag": "prompt"},
       "image_count": {"flag": "count", "default": "1"},
-      "assets.image_file_paths": {"flag": "image", "file_kind": "image", "required": true, "min_items": 1}
+      "assets.image_file_paths": {"flag": "image", "file_kind": "image", "required": true, "min_items": 1, "help": "Image path or URL; repeat for multiple images. Use - for piped mh JSON."}
     }
   }
 ]
