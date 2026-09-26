@@ -8,6 +8,13 @@ flows. Results support text and JSON output, with explicit piping between comman
 Under development; no releases yet. `image generate` and `image edit` support
 API execution, local uploads, polling, downloads, and explicit JSON piping.
 
+Tagged releases build static `mh` binaries for macOS, Linux, and Windows on
+amd64 and arm64. Archives include shell completions and license notices; release
+checksums are published alongside them. Download your archive from
+[Releases](https://github.com/magichourhq/cli/releases), verify it against
+`checksums.txt`, then put `mh` on your `PATH`. Until the first release, build
+from source:
+
 ```sh
 go build -o mh ./cmd/mh
 ./mh image generate --prompt 'A mountain landscape' --dry-run

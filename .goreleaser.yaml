@@ -1,0 +1,33 @@
+version: 2
+project_name: mh
+before:
+  hooks:
+    - make completions
+builds:
+  - id: mh
+    main: ./cmd/mh
+    binary: mh
+    env: [CGO_ENABLED=0]
+    goos: [darwin, linux, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+archives:
+  - formats: [tar.gz]
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - THIRD_PARTY_NOTICES.txt
+      - README.md
+      - completions/*
+checksum:
+  name_template: checksums.txt
+release:
+  prerelease: auto
+  github:
+    owner: magichourhq
+    name: cli

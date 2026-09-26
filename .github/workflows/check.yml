@@ -17,3 +17,7 @@ jobs:
       - run: go build ./...
       - run: GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o /tmp/mh.exe ./cmd/mh
       - run: GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o /tmp/mh-darwin ./cmd/mh
+      - uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        with:
+          version: v2.18.2
+          args: release --snapshot --clean
