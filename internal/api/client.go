@@ -97,7 +97,9 @@ func (c *Client) Transfer(ctx context.Context, method, address string, input io.
 		req.ContentLength = size
 		req.Header.Set("Content-Type", "application/octet-stream")
 	}
-	resp, err := c.http.Do(req)
+	transfer := *c.http
+	transfer.Timeout = 0 // The command context bounds the streaming transfer.
+	resp, err := transfer.Do(req)
 	if err != nil {
 		// Signed URL query strings are credentials, so do not print url.Error.
 		if ctx.Err() != nil {
