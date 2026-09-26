@@ -4,9 +4,8 @@ Generate images, video, and audio from the terminal with `mh`.
 
 Fresh implementation. The planned design combines Go command definitions generated from OpenAPI with shared upload, generation, polling, and download flows. Commands support human-readable and machine-readable output, with explicit piping for composition. No interactive prompts in v1.
 
-Under development; no releases yet. `image generate` supports API execution,
-polling, and downloads. `image edit` supports request validation and dry runs;
-uploads follow separately.
+Under development; no releases yet. `image generate` and `image edit` support
+API execution, local uploads, polling, downloads, and explicit JSON piping.
 
 ```sh
 go build -o mh ./cmd/mh
@@ -44,6 +43,25 @@ identity, status, and an `outputs` array containing URLs and absolute local path
 when downloaded. Project retrieval also includes the raw response as `project`.
 Failures exit nonzero and print an error on stderr (a JSON error object in JSON
 mode); a known project ID is preserved in stdout so the operation can be resumed.
+
+## Combining commands
+
+```sh
+set -o pipefail
+./mh image generate --prompt 'A mountain landscape' --no-download --format json |
+  ./mh image edit --image - --prompt 'Make it sunset'
+```
+
+`--image -` explicitly reads one `mh --format json` result from stdin. It prefers
+downloaded paths when present, otherwise uses output URLs. A repeated-image input
+accepts all outputs; single-file inputs require exactly one. Unfinished projects,
+wrong media types, and empty outputs fail before upload or generation. Stdin is
+never read implicitly. The operation timeout also bounds explicit stdin reads.
+
+File flags accept local paths, HTTP(S) URLs, or durable API file paths (such as
+`api-assets/...`). Local files upload automatically; remote references pass
+through. All local inputs are checked before uploading any files. Dry runs do
+not upload or check local file contents.
 
 Missing inputs fail with an example; commands never prompt or implicitly read
 stdin. Repeat `--image` for multiple editing inputs. `--dry-run` prints JSON and
