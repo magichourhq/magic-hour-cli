@@ -5,7 +5,7 @@ Generate and edit images from the terminal with `mh`.
 Commands are generated from OpenAPI and share upload, polling, and download
 flows. Results support text and JSON output, with explicit piping between commands.
 
-Under development; no releases yet. `image generate` and `image edit` support
+Alpha release. `image generate` and `image edit` support
 API execution, local uploads, polling, downloads, and explicit JSON piping.
 
 Tagged releases build static `mh` binaries for macOS, Linux, and Windows on
@@ -14,8 +14,7 @@ checksums are published alongside them. Download your archive from
 [Releases](https://github.com/magichourhq/cli/releases), verify it against
 `checksums.txt`, then put `mh` on your `PATH`. A release starts when a reviewed
 PR changes `VERSION` on `main`. The workflow tags that commit, builds the
-binaries, and creates the GitHub release. The initial `0.0.0-dev` file is a
-baseline and does not publish. Until the first release, build from source:
+binaries, and creates the GitHub release. To build from source:
 
 ```sh
 go build -o mh ./cmd/mh
