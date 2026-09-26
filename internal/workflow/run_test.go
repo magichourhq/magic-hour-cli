@@ -68,3 +68,33 @@ func TestRunnerCreatesAndFinishesProject(t *testing.T) {
 		t.Fatalf("creates=%d, polls=%d, result=%+v", creates, polls, result)
 	}
 }
+
+func TestRunnerRetriesPollWithoutRepeatingCreation(t *testing.T) {
+	original := http.DefaultTransport
+	t.Cleanup(func() { http.DefaultTransport = original })
+	creates, polls := 0, 0
+	http.DefaultTransport = transportFunc(func(req *http.Request) (*http.Response, error) {
+		switch req.Method {
+		case http.MethodPost:
+			creates++
+			return jsonResponse(200, `{"id":"job-1"}`), nil
+		case http.MethodGet:
+			polls++
+			if polls == 1 {
+				return jsonResponse(503, `{"code":"unavailable","message":"temporary"}`), nil
+			}
+			return jsonResponse(200, `{"status":"complete","downloads":[{"url":"https://example.com/output.png"}]}`), nil
+		}
+		t.Errorf("unexpected request: %s %s", req.Method, req.URL)
+		return jsonResponse(404, `{}`), nil
+	})
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	result, err := (Runner{Client: api.New("test-key")}).Generate(ctx, imageGenerateOperation(t), map[string][]string{"prompt": {"mountain"}}, Options{NoDownload: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if creates != 1 || polls != 2 || result.ID != "job-1" || result.Status != "complete" {
+		t.Fatalf("creates=%d, polls=%d, result=%+v", creates, polls, result)
+	}
+}
