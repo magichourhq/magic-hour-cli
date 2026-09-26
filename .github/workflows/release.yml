@@ -1,7 +1,8 @@
 name: Release
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths: [VERSION]
 permissions:
   contents: write
 jobs:
@@ -12,16 +13,50 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      - name: Check version change
+        id: version
+        shell: bash
+        env:
+          PREVIOUS_COMMIT: ${{ github.event.before }}
+        run: |
+          version=$(cat VERSION)
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "VERSION must be a semantic version without the v prefix" >&2
+            exit 1
+          fi
+          if previous=$(git show "$PREVIOUS_COMMIT:VERSION" 2>/dev/null) && [ "$version" != "$previous" ]; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "number=$version" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        if: steps.version.outputs.release == 'true'
         with:
           go-version-file: go.mod
-      - run: go generate ./...
-      - run: git diff --exit-code
-      - run: go vet ./...
-      - run: go test ./...
+      - if: steps.version.outputs.release == 'true'
+        run: go generate ./...
+      - if: steps.version.outputs.release == 'true'
+        run: git diff --exit-code
+      - if: steps.version.outputs.release == 'true'
+        run: go vet ./...
+      - if: steps.version.outputs.release == 'true'
+        run: go test ./...
+      - name: Tag release
+        if: steps.version.outputs.release == 'true'
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.number }}
+        run: |
+          tag="v$RELEASE_VERSION"
+          if git show-ref --verify --quiet "refs/tags/$tag"; then
+            test "$(git rev-list -n 1 "$tag")" = "$(git rev-parse HEAD)"
+          else
+            git tag "$tag"
+            git push origin "$tag"
+          fi
       - uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        if: steps.version.outputs.release == 'true'
         with:
           version: v2.18.2
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GORELEASER_CURRENT_TAG: v${{ steps.version.outputs.number }}
