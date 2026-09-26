@@ -21,3 +21,4 @@ jobs:
         with:
           version: v2.18.2
           args: release --snapshot --clean
+      - run: python3 scripts/homebrew.py && ruby -c dist/mh.rb

@@ -9,3 +9,4 @@ completions:
 
 snapshot:
 	go run github.com/goreleaser/goreleaser/v2@v2.18.2 release --snapshot --clean
+	python3 scripts/homebrew.py

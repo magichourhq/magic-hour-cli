@@ -1,6 +1,7 @@
 /mh
 /mh.exe
 /dist/
+/completions/
 .DS_Store
 .env
 .env.*
