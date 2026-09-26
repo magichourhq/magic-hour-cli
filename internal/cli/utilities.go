@@ -19,11 +19,18 @@ import (
 )
 
 func apiCommand(cmd *cobra.Command, fn func(context.Context, *api.Client) error) error {
+	return apiCommandWithTimeout(cmd, 2*time.Minute, fn)
+}
+
+func apiCommandWithTimeout(cmd *cobra.Command, timeout time.Duration, fn func(context.Context, *api.Client) error) error {
+	if timeout <= 0 {
+		return fmt.Errorf("--timeout must be positive")
+	}
 	key, err := config.Key()
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(cmd.Context(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(cmd.Context(), timeout)
 	defer cancel()
 	return fn(ctx, api.New(key))
 }
@@ -97,6 +104,7 @@ func addUtilities(root *cobra.Command) {
 	files := &cobra.Command{Use: "files", Short: "Upload reusable media"}
 	upload := &cobra.Command{Use: "upload PATH...", Short: "Upload local files and return durable API paths", Args: cobra.MinimumNArgs(1)}
 	fileType := upload.Flags().String("type", "media", "Asset type: image, video, audio, or media (infer from extension)")
+	timeout := upload.Flags().Duration("timeout", 30*time.Minute, "Maximum time for the entire upload batch")
 	upload.RegisterFlagCompletionFunc("type", choices([]string{"image", "video", "audio", "media"}))
 	upload.RunE = func(cmd *cobra.Command, args []string) error {
 		if !slices.Contains([]string{"image", "video", "audio", "media"}, *fileType) {
@@ -115,12 +123,19 @@ func addUtilities(root *cobra.Command) {
 				return err
 			}
 		}
-		return apiCommand(cmd, func(ctx context.Context, c *api.Client) error {
+		return apiCommandWithTimeout(cmd, *timeout, func(ctx context.Context, c *api.Client) error {
 			r := workflow.Runner{Client: c, Progress: func(s string) { fmt.Fprintln(cmd.ErrOrStderr(), s) }}
 			paths := make([]string, 0, len(args))
 			for _, file := range args {
 				path, err := r.Upload(ctx, file, *fileType)
 				if err != nil {
+					if len(paths) > 0 {
+						if jsonMode(cmd) {
+							_ = writeJSON(cmd, map[string]any{"file_paths": paths, "error": err.Error()})
+						} else {
+							fmt.Fprintln(cmd.OutOrStdout(), strings.Join(paths, "\n"))
+						}
+					}
 					return err
 				}
 				paths = append(paths, path)

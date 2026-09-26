@@ -13,15 +13,21 @@ import (
 // Rule is the supported request schema compiled into Go, including nested JSON
 // inputs. Unknown OpenAPI keywords fail generation, not execution.
 type Rule struct {
-	Type                                     string          `json:"type"`
-	Properties                               map[string]Rule `json:"properties,omitempty"`
-	Required                                 []string        `json:"required,omitempty"`
-	Item                                     *Rule           `json:"items,omitempty"`
-	Enum                                     []any           `json:"enum,omitempty"`
-	Minimum, Maximum, MultipleOf             string
-	MinLength, MaxLength, MinItems, MaxItems int
-	Pattern, Format                          string
-	Nullable                                 bool
+	Type       string          `json:"type"`
+	Properties map[string]Rule `json:"properties,omitempty"`
+	Required   []string        `json:"required,omitempty"`
+	Item       *Rule           `json:"items,omitempty"`
+	Enum       []any           `json:"enum,omitempty"`
+	Minimum    string          `json:"minimum,omitempty"`
+	Maximum    string          `json:"maximum,omitempty"`
+	MultipleOf string          `json:"multiple_of,omitempty"`
+	MinLength  int             `json:"min_length,omitempty"`
+	MaxLength  int             `json:"max_length,omitempty"`
+	MinItems   int             `json:"min_items,omitempty"`
+	MaxItems   int             `json:"max_items,omitempty"`
+	Pattern    string          `json:"pattern,omitempty"`
+	Format     string          `json:"format,omitempty"`
+	Nullable   bool            `json:"nullable,omitempty"`
 }
 
 func (r Rule) validate(value any, path string) error {

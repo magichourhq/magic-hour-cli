@@ -41,8 +41,8 @@ func resolveStdin(ctx context.Context, input io.Reader, op catalog.Operation, va
 	if result.Status != "complete" {
 		return fmt.Errorf("stdin project is not complete (status %q)", result.Status)
 	}
-	if field.FileKind != "media" && result.Type != field.FileKind {
-		return fmt.Errorf("--%s expects %s, stdin contains %s", field.Flag, field.FileKind, result.Type)
+	if result.Error != "" {
+		return fmt.Errorf("upstream command failed: %s", result.Error)
 	}
 	if len(result.Outputs) == 0 {
 		return fmt.Errorf("stdin project has no outputs")
@@ -58,6 +58,16 @@ func resolveStdin(ctx context.Context, input io.Reader, op catalog.Operation, va
 		}
 		if ref == "" {
 			return fmt.Errorf("stdin output has no path or URL")
+		}
+		kind := output.MediaType
+		if kind == "" {
+			kind = workflow.MediaKind(ref)
+		}
+		if kind == "" {
+			kind = result.Type
+		}
+		if !workflow.AcceptsMedia(field.FileKind, kind) {
+			return fmt.Errorf("--%s expects %s, stdin contains %s", field.Flag, field.FileKind, kind)
 		}
 		refs = append(refs, ref)
 	}

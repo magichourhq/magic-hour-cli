@@ -4,6 +4,7 @@ package workflow
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -16,6 +17,7 @@ type Output struct {
 	URL       string `json:"url"`
 	Path      string `json:"path,omitempty"`
 	ExpiresAt string `json:"expires_at,omitempty"`
+	MediaType string `json:"media_type,omitempty"`
 }
 
 type Result struct {
@@ -25,6 +27,7 @@ type Result struct {
 	Outputs []Output        `json:"outputs"`
 	Project json.RawMessage `json:"project,omitempty"`
 	Faces   []Face          `json:"faces,omitempty"`
+	Error   string          `json:"error,omitempty"`
 }
 
 type Face struct {
@@ -101,6 +104,12 @@ func (r Runner) Get(ctx context.Context, kind, id string) (Result, error) {
 	result.Faces = response.Faces
 	if response.Downloads != nil {
 		result.Outputs = response.Downloads
+		for i := range result.Outputs {
+			result.Outputs[i].MediaType = MediaKind(result.Outputs[i].URL)
+			if kind == "audio" {
+				result.Outputs[i].MediaType = "audio"
+			}
+		}
 	}
 	if response.Enabled != nil && !*response.Enabled {
 		return result, fmt.Errorf("project %s was deleted", id)
@@ -117,30 +126,56 @@ func (r Runner) Get(ctx context.Context, kind, id string) (Result, error) {
 
 func (r Runner) Finish(ctx context.Context, kind, id string, opts Options) (Result, error) {
 	lastStatus := ""
+	failures := 0
+	resume := func(err error) error {
+		group := kind
+		if kind == "face-detection" {
+			group = "faces"
+		}
+		return fmt.Errorf("%w; resume with mh %s wait %s", err, group, id)
+	}
 	for {
 		result, err := r.Get(ctx, kind, id)
+		delay := 2 * time.Second
 		if err != nil {
-			return result, err
-		}
-		if result.Status != lastStatus {
-			r.note(id + ": " + result.Status)
-			lastStatus = result.Status
-		}
-		switch result.Status {
-		case "complete":
-			if !opts.NoDownload {
-				return r.Download(ctx, result, opts.Output)
+			if ctx.Err() != nil {
+				return result, resume(err)
 			}
-			return result, nil
-		case "queued", "rendering":
-		default:
-			return result, fmt.Errorf("project %s has non-pollable status %q", id, result.Status)
+			if !api.Retryable(err) {
+				return result, err
+			}
+			if failures >= 3 {
+				return result, resume(err)
+			}
+			failures++
+			delay = time.Duration(1<<failures) * time.Second
+			var apiErr *api.Error
+			if errors.As(err, &apiErr) && apiErr.RetryAfter > delay {
+				delay = apiErr.RetryAfter
+			}
+			r.note(fmt.Sprintf("Polling temporarily failed; retrying in %s", delay))
+		} else {
+			failures = 0
+			if result.Status != lastStatus {
+				r.note(id + ": " + result.Status)
+				lastStatus = result.Status
+			}
+			switch result.Status {
+			case "complete":
+				if !opts.NoDownload {
+					return r.Download(ctx, result, opts.Output)
+				}
+				return result, nil
+			case "queued", "rendering":
+			default:
+				return result, fmt.Errorf("project %s has non-pollable status %q", id, result.Status)
+			}
 		}
-		timer := time.NewTimer(2 * time.Second)
+		timer := time.NewTimer(delay)
 		select {
 		case <-ctx.Done():
 			timer.Stop()
-			return result, fmt.Errorf("waiting for %s: %w; resume with mh %s wait %s", id, ctx.Err(), kind, id)
+			return result, resume(fmt.Errorf("waiting for %s: %w", id, ctx.Err()))
 		case <-timer.C:
 		}
 	}

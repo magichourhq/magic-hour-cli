@@ -505,7 +505,7 @@ var Operations = []Operation{
 			{Flag: "face-mappings", Path: []string{"assets", "face_mappings"}, Type: "json", Help: "This is the array of face mappings used for multiple face swap. The value is required if `face_swap_mode` is `individual-faces`.", Required: false, Default: "", Enum: []string(nil), Minimum: "", Maximum: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 5, FileKind: ""},
 			{Flag: "face-swap-mode", Path: []string{"assets", "face_swap_mode"}, Type: "string", Help: "Choose how to swap faces:", Required: false, Default: "", Enum: []string{"all-faces", "individual-faces"}, Minimum: "", Maximum: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: ""},
 			{Flag: "image", Path: []string{"assets", "image_file_path"}, Type: "string", Help: "The path of the input image with the face to be swapped.  The value is required if `face_swap_mode` is `all-faces`.", Required: false, Default: "", Enum: []string(nil), Minimum: "", Maximum: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: "image"},
-			{Flag: "video", Path: []string{"assets", "video_file_path"}, Type: "string", Help: "Your video file. Required if `video_source` is `file`. This value is either", Required: false, Default: "", Enum: []string(nil), Minimum: "", Maximum: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: "video"},
+			{Flag: "video", Path: []string{"assets", "video_file_path"}, Type: "string", Help: "Your video file. Required if `video_source` is `file`. This value is either", Required: false, Default: "", Enum: []string(nil), Minimum: "", Maximum: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: "video-or-gif"},
 			{Flag: "video-source", Path: []string{"assets", "video_source"}, Type: "string", Help: "Choose your video source.", Required: true, Default: "", Enum: []string{"file", "youtube"}, Minimum: "", Maximum: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: ""},
 			{Flag: "youtube-url", Path: []string{"assets", "youtube_url"}, Type: "string", Help: "YouTube URL (required if `video_source` is `youtube`).", Required: false, Default: "", Enum: []string(nil), Minimum: "", Maximum: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: ""},
 			{Flag: "end", Path: []string{"end_seconds"}, Type: "number", Help: "End time of your clip (seconds). Must be greater than start_seconds.", Required: true, Default: "", Enum: []string(nil), Minimum: "0.1", Maximum: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: ""},
@@ -532,7 +532,7 @@ var Operations = []Operation{
 			}},
 		}}, Files: []FileInput{
 			{Path: []string{"assets", "image_file_path"}, Kind: "image"},
-			{Path: []string{"assets", "video_file_path"}, Kind: "video"},
+			{Path: []string{"assets", "video_file_path"}, Kind: "video-or-gif"},
 			{Path: []string{"assets", "face_mappings", "*", "new_face"}, Kind: "image"},
 		}},
 	{ID: "characterReplace.createVideo", Group: "video", Name: "replace-character", Kind: "video", Path: "/v1/character-replace", Summary: "Character Replace", Example: "mh video replace-character --video clip.mp4 --image character.png --end 5",

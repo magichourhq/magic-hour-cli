@@ -13,12 +13,27 @@ import (
 )
 
 var extensions = map[string]string{
+	"gif": "gif",
 	"png": "image", "jpg": "image", "jpeg": "image", "jfif": "image", "heic": "image", "heif": "image", "webp": "image", "avif": "image", "jp2": "image", "tiff": "image", "tif": "image", "bmp": "image",
 	"mp4": "video", "m4v": "video", "mov": "video", "webm": "video",
 	"mp3": "audio", "wav": "audio", "aac": "audio", "flac": "audio", "weba": "audio", "m4a": "audio", "opus": "audio", "ogg": "audio", "oga": "audio", "aiff": "audio", "amr": "audio",
 }
 
 func ValidateInput(value, kind string) error { _, _, err := inspectInput(value, kind); return err }
+
+func AcceptsMedia(expected, actual string) bool {
+	if actual == "gif" {
+		return expected == "video-or-gif"
+	}
+	return expected == "media" || expected == actual || (expected == "video-or-gif" && (actual == "video" || actual == "gif"))
+}
+
+func MediaKind(value string) string {
+	if u, err := url.Parse(value); err == nil && u.Scheme != "" {
+		value = u.Path
+	}
+	return extensions[strings.ToLower(strings.TrimPrefix(filepath.Ext(value), "."))]
+}
 
 // inspectInput distinguishes local files from URLs and durable API file paths.
 // All inputs are inspected before the first upload starts.
@@ -31,8 +46,11 @@ func inspectInput(value, expected string) (local bool, kind string, err error) {
 		if e != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" || u.User != nil {
 			return false, "", fmt.Errorf("invalid media URL")
 		}
-		kind = extensions[strings.ToLower(strings.TrimPrefix(filepath.Ext(u.Path), "."))]
-		if expected != "media" && kind != "" && kind != expected {
+		kind = MediaKind(u.Path)
+		if expected == "audio" && strings.EqualFold(filepath.Ext(u.Path), ".webm") {
+			kind = "audio"
+		}
+		if kind != "" && !AcceptsMedia(expected, kind) {
 			return false, "", fmt.Errorf("expected %s input, URL has %s extension", expected, kind)
 		}
 		return false, expected, nil
@@ -55,7 +73,7 @@ func inspectInput(value, expected string) (local bool, kind string, err error) {
 	if kind == "" {
 		return false, "", fmt.Errorf("unsupported input extension .%s", ext)
 	}
-	if expected != "media" && expected != kind {
+	if !AcceptsMedia(expected, kind) {
 		return false, "", fmt.Errorf("expected %s input, got %s: %s", expected, kind, value)
 	}
 	return true, kind, nil
@@ -65,6 +83,13 @@ func (r Runner) Upload(ctx context.Context, value, expected string) (string, err
 	local, kind, err := inspectInput(value, expected)
 	if err != nil || !local {
 		return value, err
+	}
+	// Upload URLs accept GIF extensions under image/video, not a separate gif type.
+	if kind == "gif" {
+		kind = "image"
+		if expected == "video-or-gif" {
+			kind = "video"
+		}
 	}
 	f, err := os.Open(value)
 	if err != nil {

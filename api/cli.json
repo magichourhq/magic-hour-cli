@@ -556,7 +556,7 @@
       },
       "assets.video_file_path": {
         "flag": "video",
-        "file_kind": "video"
+        "file_kind": "video-or-gif"
       },
       "assets.youtube_url": {
         "flag": "youtube-url"

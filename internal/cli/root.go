@@ -101,7 +101,6 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 		}
 		ctx, cancel := context.WithTimeout(cmd.Context(), *timeout)
 		defer cancel()
-		cmd.SetContext(ctx)
 		values := map[string][]string{}
 		for _, f := range op.Fields {
 			if !cmd.Flags().Changed(f.Flag) {

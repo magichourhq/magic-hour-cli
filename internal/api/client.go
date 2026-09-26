@@ -6,10 +6,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -26,9 +28,10 @@ func New(key string) *Client {
 }
 
 type Error struct {
-	Status  int    `json:"status"`
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Status     int           `json:"status"`
+	Code       string        `json:"code"`
+	Message    string        `json:"message"`
+	RetryAfter time.Duration `json:"-"`
 }
 
 func (e *Error) Error() string { return fmt.Sprintf("API %d (%s): %s", e.Status, e.Code, e.Message) }
@@ -68,6 +71,9 @@ func (c *Client) Do(ctx context.Context, method, path string, body, result any) 
 		e := &Error{Status: resp.StatusCode}
 		_ = json.Unmarshal(data, e)
 		e.Status = resp.StatusCode
+		if seconds, err := strconv.Atoi(resp.Header.Get("Retry-After")); err == nil && seconds > 0 && seconds <= 3600 {
+			e.RetryAfter = time.Duration(seconds) * time.Second
+		}
 		if e.Message == "" {
 			e.Message = http.StatusText(resp.StatusCode)
 		}
@@ -97,7 +103,9 @@ func (c *Client) Transfer(ctx context.Context, method, address string, input io.
 		req.ContentLength = size
 		req.Header.Set("Content-Type", "application/octet-stream")
 	}
-	resp, err := c.http.Do(req)
+	transfer := *c.http
+	transfer.Timeout = 0 // The command context bounds the entire streaming transfer.
+	resp, err := transfer.Do(req)
 	if err != nil {
 		// Signed URL query strings are credentials, so do not print url.Error.
 		if ctx.Err() != nil {
@@ -114,6 +122,15 @@ func (c *Client) Transfer(ctx context.Context, method, address string, input io.
 		return err
 	}
 	return nil
+}
+
+func Retryable(err error) bool {
+	var status *Error
+	if errors.As(err, &status) {
+		return status.Status == 429 || status.Status >= 500
+	}
+	var transport *url.Error
+	return errors.As(err, &transport) && !errors.Is(err, context.Canceled)
 }
 
 func ProjectPath(kind, id string) (string, error) {
