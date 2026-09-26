@@ -22,6 +22,7 @@ func New(version string) *cobra.Command {
 		return nil
 	}
 	root.RegisterFlagCompletionFunc("format", choices([]string{"text", "json"}))
+	addAuth(root)
 	groups := map[string]*cobra.Command{}
 	for _, op := range catalog.Operations {
 		group := groups[op.Group]

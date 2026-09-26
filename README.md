@@ -16,9 +16,22 @@ go build -o mh ./cmd/mh
 ./mh completion zsh
 ```
 
-Set `MAGIC_HOUR_API_KEY` or use `~/.config/magic-hour/config.json` with an `api_key`
-property. `MAGIC_HOUR_CONFIG` overrides the config path; `XDG_CONFIG_HOME` overrides
-the default configuration directory. Environment credentials take precedence.
+Set `MAGIC_HOUR_API_KEY`, or validate and save a key with `mh auth login`:
+
+```sh
+export MAGIC_HOUR_API_KEY='your-key'
+./mh auth login
+./mh auth status
+./mh auth logout
+```
+
+For a key from a secret manager, pipe it to `mh auth login --key-stdin`. Login
+validates the key before saving it. Neither command prompts or prints the key.
+Saved keys live in `~/.config/magic-hour/config.json` on macOS/Linux and the
+user config directory on Windows. `MAGIC_HOUR_CONFIG` overrides the config path;
+`XDG_CONFIG_HOME` overrides the default directory. Environment credentials take
+precedence, including after logout. You can also set the config file directly
+with an `api_key` property.
 
 ```sh
 ./mh image generate --prompt 'A mountain landscape' --output landscape.png
