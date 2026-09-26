@@ -1,11 +1,13 @@
 package cli
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/magichourhq/cli/internal/catalog"
+	"github.com/magichourhq/cli/internal/workflow"
 	"github.com/spf13/cobra"
 )
 
@@ -27,6 +29,7 @@ func New(version string) *cobra.Command {
 			group = &cobra.Command{Use: op.Group, Short: "Create and manage " + op.Kind + " projects"}
 			groups[op.Group] = group
 			root.AddCommand(group)
+			addManagement(group, op.Kind)
 		}
 		group.AddCommand(operationCommand(op))
 	}
@@ -55,6 +58,7 @@ func New(version string) *cobra.Command {
 
 func operationCommand(op catalog.Operation) *cobra.Command {
 	cmd := &cobra.Command{Use: op.Name, Short: op.Summary, Example: op.Example, Args: cobra.NoArgs}
+	opts, timeout := executionFlags(cmd)
 	var dryRun bool
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate inputs and print the request without making API calls")
 	for _, f := range op.Fields {
@@ -96,7 +100,9 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 		if dryRun {
 			return writeJSON(cmd, map[string]any{"method": "POST", "path": op.Path, "body": body})
 		}
-		return fmt.Errorf("API execution is not available in this build; use --dry-run to inspect the request")
+		return execute(cmd, *timeout, func(ctx context.Context, runner workflow.Runner) (workflow.Result, error) {
+			return runner.Generate(ctx, op, values, *opts)
+		})
 	}
 	return cmd
 }
