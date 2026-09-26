@@ -18,6 +18,8 @@ var extensions = map[string]string{
 	"mp3": "audio", "wav": "audio", "aac": "audio", "flac": "audio", "weba": "audio", "m4a": "audio", "opus": "audio", "ogg": "audio", "oga": "audio", "aiff": "audio", "amr": "audio",
 }
 
+func ValidateInput(value, kind string) error { _, _, err := inspectInput(value, kind); return err }
+
 // inspectInput distinguishes local files from URLs and durable API file paths.
 // All inputs are inspected before the first upload starts.
 func inspectInput(value, expected string) (local bool, kind string, err error) {

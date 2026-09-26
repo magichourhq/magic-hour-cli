@@ -117,11 +117,14 @@ func (c *Client) Transfer(ctx context.Context, method, address string, input io.
 }
 
 func ProjectPath(kind, id string) (string, error) {
-	if kind != "image" && kind != "video" && kind != "audio" {
+	if kind != "image" && kind != "video" && kind != "audio" && kind != "face-detection" {
 		return "", fmt.Errorf("unknown project type %q", kind)
 	}
 	if id == "" || strings.ContainsAny(id, "/\\?#") || id == "." || id == ".." {
 		return "", fmt.Errorf("invalid project ID")
+	}
+	if kind == "face-detection" {
+		return "/v1/face-detection/" + url.PathEscape(id), nil
 	}
 	return "/v1/" + kind + "-projects/" + url.PathEscape(id), nil
 }

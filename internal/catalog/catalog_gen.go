@@ -656,4 +656,16 @@ var Operations = []Operation{
 		}}, Files: []FileInput{
 			{Path: []string{"assets", "audio_file_path"}, Kind: "audio"},
 		}},
+	{ID: "faceDetection.detectFaces", Group: "faces", Name: "detect", Kind: "face-detection", Path: "/v1/face-detection", Summary: "Face Detection", Example: "mh faces detect --file portrait.png",
+		Fields: []Field{
+			{Flag: "file", Path: []string{"assets", "target_file_path"}, Type: "string", Help: "This is the image or video where the face will be detected. This value is either", Required: true, Default: "", Enum: []string(nil), Minimum: "", Maximum: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: "media"},
+			{Flag: "confidence-score", Path: []string{"confidence_score"}, Type: "number", Help: "Confidence threshold for filtering detected faces. ", Required: false, Default: "", Enum: []string(nil), Minimum: "0", Maximum: "1", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: ""},
+		}, Schema: Rule{Type: "object", Required: []string{"assets"}, Enum: []any{}, Minimum: "", Maximum: "", MultipleOf: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, Pattern: "", Format: "", Nullable: false, Properties: map[string]Rule{
+			"assets": Rule{Type: "object", Required: []string{"target_file_path"}, Enum: []any{}, Minimum: "", Maximum: "", MultipleOf: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, Pattern: "", Format: "", Nullable: false, Properties: map[string]Rule{
+				"target_file_path": Rule{Type: "string", Required: []string(nil), Enum: []any{}, Minimum: "", Maximum: "", MultipleOf: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, Pattern: "", Format: "", Nullable: false},
+			}},
+			"confidence_score": Rule{Type: "number", Required: []string(nil), Enum: []any{}, Minimum: "0", Maximum: "1", MultipleOf: "0.05", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, Pattern: "", Format: "", Nullable: false},
+		}}, Files: []FileInput{
+			{Path: []string{"assets", "target_file_path"}, Kind: "media"},
+		}},
 }

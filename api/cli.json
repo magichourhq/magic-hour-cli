@@ -699,5 +699,18 @@
         "flag": "text"
       }
     }
+  },
+  {
+    "id": "faceDetection.detectFaces",
+    "group": "faces",
+    "name": "detect",
+    "kind": "face-detection",
+    "example": "mh faces detect --file portrait.png",
+    "overrides": {
+      "assets.target_file_path": {
+        "flag": "file",
+        "file_kind": "media"
+      }
+    }
   }
 ]

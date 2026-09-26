@@ -24,6 +24,12 @@ type Result struct {
 	Status  string          `json:"status"`
 	Outputs []Output        `json:"outputs"`
 	Project json.RawMessage `json:"project,omitempty"`
+	Faces   []Face          `json:"faces,omitempty"`
+}
+
+type Face struct {
+	Path string `json:"path"`
+	URL  string `json:"url"`
 }
 
 type Options struct {
@@ -80,6 +86,7 @@ func (r Runner) Get(ctx context.Context, kind, id string) (Result, error) {
 		Status    string   `json:"status"`
 		Downloads []Output `json:"downloads"`
 		Enabled   *bool    `json:"enabled"`
+		Faces     []Face   `json:"faces"`
 		Error     *struct {
 			Message string `json:"message"`
 		} `json:"error"`
@@ -91,6 +98,7 @@ func (r Runner) Get(ctx context.Context, kind, id string) (Result, error) {
 		return result, err
 	}
 	result.Status = response.Status
+	result.Faces = response.Faces
 	if response.Downloads != nil {
 		result.Outputs = response.Downloads
 	}

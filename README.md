@@ -15,6 +15,34 @@ go build -o mh ./cmd/mh
 ./mh completion zsh
 ```
 
+## Authentication and utilities
+
+```sh
+# Validate and save an environment key (no prompt or key argument).
+mh auth login
+
+# Or send a key from a secret manager through stdin.
+secret-manager-command | mh auth login --key-stdin
+mh auth status
+mh auth logout
+
+mh account get
+mh saved-items list --type reference --limit 20 --format json
+mh files upload portrait.png voice.wav
+mh faces detect --file portrait.png --format json
+mh faces get DETECTION_ID --format json
+mh faces wait DETECTION_ID --format json
+```
+
+Login validates the key before saving it. Saved credentials use an atomic write
+with owner-only file permissions on Unix. Logout removes saved credentials;
+environment keys remain active. Windows uses the user's configuration directory.
+Neither login nor any other command prompts interactively.
+
+Saved items are paginated; pass `next_cursor` to `--cursor` for the next page.
+Face detection returns face paths for `face_mappings.original_face` and preview
+URLs. It waits by default, supports `--no-wait`, and does not download face crops.
+
 Set `MAGIC_HOUR_API_KEY` or use `~/.config/magic-hour/config.json` with an `api_key`
 property. `MAGIC_HOUR_CONFIG` overrides the config path; `XDG_CONFIG_HOME` overrides
 the default configuration directory. Environment credentials take precedence.

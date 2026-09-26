@@ -12,11 +12,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func executionFlags(cmd *cobra.Command) (*workflow.Options, *time.Duration) {
+func executionFlags(cmd *cobra.Command, kind string) (*workflow.Options, *time.Duration) {
 	opts := &workflow.Options{}
 	cmd.Flags().BoolVar(&opts.NoWait, "no-wait", false, "Return the project ID without waiting")
-	cmd.Flags().BoolVar(&opts.NoDownload, "no-download", false, "Wait for completion and return output URLs")
-	cmd.Flags().StringVar(&opts.Output, "output", "", "Output filename, or an existing directory for multiple files; never overwrite")
+	if kind == "face-detection" {
+		opts.NoDownload = true
+	} else {
+		cmd.Flags().BoolVar(&opts.NoDownload, "no-download", false, "Wait for completion and return output URLs")
+		cmd.Flags().StringVar(&opts.Output, "output", "", "Output filename, or an existing directory for multiple files; never overwrite")
+	}
 	timeout := cmd.Flags().Duration("timeout", 30*time.Minute, "Maximum time for the whole operation")
 	return opts, timeout
 }
@@ -46,6 +50,18 @@ func printResult(cmd *cobra.Command, result workflow.Result) error {
 	if format == "json" {
 		return writeJSON(cmd, result)
 	}
+	if result.Type == "face-detection" && result.Status == "complete" {
+		if len(result.Faces) == 0 {
+			_, err := fmt.Fprintln(cmd.OutOrStdout(), "No faces detected.")
+			return err
+		}
+		for i, face := range result.Faces {
+			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "%d\t%s\n", i, face.Path); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 	if len(result.Outputs) == 0 {
 		_, err := fmt.Fprintln(cmd.OutOrStdout(), result.ID)
 		return err
@@ -60,6 +76,22 @@ func printResult(cmd *cobra.Command, result workflow.Result) error {
 		}
 	}
 	return nil
+}
+
+func addFaceManagement(group *cobra.Command) {
+	for _, action := range []string{"get", "wait"} {
+		cmd := &cobra.Command{Use: action + " ID", Short: action + " face detection results", Args: cobra.ExactArgs(1)}
+		timeout := cmd.Flags().Duration("timeout", 30*time.Minute, "Maximum time for the operation")
+		cmd.RunE = func(cmd *cobra.Command, args []string) error {
+			return execute(cmd, *timeout, func(ctx context.Context, r workflow.Runner) (workflow.Result, error) {
+				if action == "get" {
+					return r.Get(ctx, "face-detection", args[0])
+				}
+				return r.Finish(ctx, "face-detection", args[0], workflow.Options{NoDownload: true})
+			})
+		}
+		group.AddCommand(cmd)
+	}
 }
 
 func addManagement(group *cobra.Command, kind string) {

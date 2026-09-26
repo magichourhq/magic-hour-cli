@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -14,17 +15,9 @@ func Key() (string, error) {
 	if key := strings.TrimSpace(os.Getenv("MAGIC_HOUR_API_KEY")); key != "" {
 		return key, nil
 	}
-	path := os.Getenv("MAGIC_HOUR_CONFIG")
-	if path == "" {
-		base := os.Getenv("XDG_CONFIG_HOME")
-		if base == "" {
-			home, err := os.UserHomeDir()
-			if err != nil {
-				return "", err
-			}
-			base = filepath.Join(home, ".config")
-		}
-		path = filepath.Join(base, "magic-hour", "config.json")
+	path, err := Path()
+	if err != nil {
+		return "", err
 	}
 	data, err := os.ReadFile(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -41,5 +34,67 @@ func Key() (string, error) {
 	if key := strings.TrimSpace(cfg.APIKey); key != "" {
 		return key, nil
 	}
-	return "", fmt.Errorf("missing API key; set MAGIC_HOUR_API_KEY")
+	return "", fmt.Errorf("missing API key; set MAGIC_HOUR_API_KEY or run mh auth login --key-stdin")
+}
+
+func Path() (string, error) {
+	if path := os.Getenv("MAGIC_HOUR_CONFIG"); path != "" {
+		return path, nil
+	}
+	base := os.Getenv("XDG_CONFIG_HOME")
+	if base == "" {
+		if runtime.GOOS == "windows" {
+			return configUnderUserDir()
+		}
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		base = filepath.Join(home, ".config")
+	}
+	return filepath.Join(base, "magic-hour", "config.json"), nil
+}
+
+func configUnderUserDir() (string, error) {
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, "magic-hour", "config.json"), nil
+}
+
+func Save(key string) error {
+	path, err := Path()
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+		return err
+	}
+	f, err := os.CreateTemp(filepath.Dir(path), ".config-*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(f.Name())
+	err = json.NewEncoder(f).Encode(map[string]string{"api_key": key})
+	closeErr := f.Close()
+	if err != nil {
+		return err
+	}
+	if closeErr != nil {
+		return closeErr
+	}
+	return os.Rename(f.Name(), path)
+}
+
+func Logout() error {
+	path, err := Path()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
 }

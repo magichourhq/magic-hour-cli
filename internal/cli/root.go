@@ -30,7 +30,11 @@ func New(version string) *cobra.Command {
 			group = &cobra.Command{Use: op.Group, Short: "Create and manage " + op.Kind + " projects"}
 			groups[op.Group] = group
 			root.AddCommand(group)
-			addManagement(group, op.Kind)
+			if op.Kind == "face-detection" {
+				addFaceManagement(group)
+			} else {
+				addManagement(group, op.Kind)
+			}
 		}
 		group.AddCommand(operationCommand(op))
 	}
@@ -51,15 +55,19 @@ func New(version string) *cobra.Command {
 		return fmt.Errorf("unknown command %s", strings.Join(args, " "))
 	}})
 	root.AddCommand(&cobra.Command{Use: "version", Short: "Print CLI version", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, args []string) error {
+		if jsonMode(cmd) {
+			return writeJSON(cmd, map[string]string{"version": version})
+		}
 		_, err := fmt.Fprintln(cmd.OutOrStdout(), version)
 		return err
 	}})
+	addUtilities(root)
 	return root
 }
 
 func operationCommand(op catalog.Operation) *cobra.Command {
 	cmd := &cobra.Command{Use: op.Name, Short: op.Summary, Example: op.Example, Args: cobra.NoArgs}
-	opts, timeout := executionFlags(cmd)
+	opts, timeout := executionFlags(cmd, op.Kind)
 	var dryRun bool
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate inputs and print the request without making API calls")
 	for _, f := range op.Fields {

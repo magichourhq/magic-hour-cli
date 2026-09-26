@@ -30,26 +30,12 @@ func resolveStdin(ctx context.Context, input io.Reader, op catalog.Operation, va
 	if field == nil {
 		return nil
 	}
-	type readResult struct {
-		data []byte
-		err  error
-	}
-	done := make(chan readResult, 1)
-	go func() { data, err := io.ReadAll(io.LimitReader(input, (4<<20)+1)); done <- readResult{data, err} }()
-	var read readResult
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case read = <-done:
-	}
-	if read.err != nil {
-		return read.err
-	}
-	if len(read.data) > 4<<20 {
-		return fmt.Errorf("stdin exceeds 4 MiB")
+	data, err := readInput(ctx, input, 4<<20)
+	if err != nil {
+		return err
 	}
 	var result workflow.Result
-	if err := json.Unmarshal(read.data, &result); err != nil {
+	if err := json.Unmarshal(data, &result); err != nil {
 		return fmt.Errorf("--%s - expects mh JSON output on stdin", field.Flag)
 	}
 	if result.Status != "complete" {
@@ -85,4 +71,25 @@ func resolveStdin(ctx context.Context, input io.Reader, op catalog.Operation, va
 	}
 	values[field.Flag] = expanded
 	return nil
+}
+
+func readInput(ctx context.Context, input io.Reader, limit int64) ([]byte, error) {
+	type readResult struct {
+		data []byte
+		err  error
+	}
+	done := make(chan readResult, 1)
+	go func() { data, err := io.ReadAll(io.LimitReader(input, limit+1)); done <- readResult{data, err} }()
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case read := <-done:
+		if read.err != nil {
+			return nil, read.err
+		}
+		if int64(len(read.data)) > limit {
+			return nil, fmt.Errorf("stdin exceeds %d bytes", limit)
+		}
+		return read.data, nil
+	}
 }
