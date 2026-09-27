@@ -1466,7 +1466,7 @@
                     },
                     "type": {
                       "type": "string",
-                      "description": "The type of the video project. Possible values are ANIMATION, AUTO_SUBTITLE, VIDEO_TO_VIDEO, FACE_SWAP, TEXT_TO_VIDEO, IMAGE_TO_VIDEO, LIP_SYNC, TALKING_PHOTO, AVATAR, VIDEO_UPSCALER, VIDEO_EDITOR, CHARACTER_REPLACE, VIDEO_COLORIZER, VIDEO_COLOR_GRADER, VIDEO_TRANSLATOR, MUSIC_VIDEO, EXTEND, AUDIO_TO_VIDEO, VIDEO_EXPANDER, UGC_AD",
+                      "description": "The type of the video project. Possible values are ANIMATION, AUTO_SUBTITLE, VIDEO_TO_VIDEO, FACE_SWAP, TEXT_TO_VIDEO, IMAGE_TO_VIDEO, LIP_SYNC, TALKING_PHOTO, AVATAR, VIDEO_UPSCALER, VIDEO_EDITOR, CHARACTER_REPLACE, VIDEO_COLORIZER, VIDEO_WATERMARK_REMOVER, VIDEO_COLOR_GRADER, VIDEO_TRANSLATOR, MUSIC_VIDEO, EXTEND, AUDIO_TO_VIDEO, VIDEO_EXPANDER, UGC_AD",
                       "example": "FACE_SWAP"
                     },
                     "created_at": {
@@ -2384,7 +2384,7 @@
                   "end_seconds": {
                     "type": "number",
                     "minimum": 0.1,
-                    "description": "End time of your clip in seconds. Must be greater than `start_seconds`. Minimum duration depends on model: `gemini-omni-1.1`: 3s, LTX 2.5: 0.5s. Maximum duration depends on model: `gemini-omni-1.1`: 10s, LTX 2.5: 45s.",
+                    "description": "End time of your clip in seconds. Must be greater than `start_seconds`. Minimum duration depends on model: `gemini-omni-1.1`: 3s, LTX 2.5: 0.5s. Maximum duration depends on model: `gemini-omni-1.1`: 10s, LTX 2.5: 20s.",
                     "format": "float",
                     "example": 5
                   },
@@ -3019,6 +3019,20 @@
         "security": [
           {
             "bearerAuth": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "source": "curl --request POST \\\n     --url https://api.magichour.ai/v1/ai-video-translator \\\n     --header 'accept: application/json' \\\n     --header \"authorization: Bearer $MAGIC_HOUR_API_KEY\" \\\n     --header 'content-type: application/json' \\\n     --data '\n{\n  \"name\": \"My Video Translator video\",\n  \"start_seconds\": 0,\n  \"end_seconds\": 15,\n  \"target_language\": \"Spanish\",\n  \"resolution\": \"720p\",\n  \"assets\": {\n    \"video_file_path\": \"api-assets/id/1234.mp4\"\n  }\n}\n'"
+          },
+          {
+            "lang": "php",
+            "source": "<?php\n\n$curl = curl_init();\n\ncurl_setopt_array($curl, [\n  CURLOPT_URL => \"https://api.magichour.ai/v1/ai-video-translator\",\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_ENCODING => \"\",\n  CURLOPT_MAXREDIRS => 10,\n  CURLOPT_TIMEOUT => 30,\n  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,\n  CURLOPT_CUSTOMREQUEST => \"POST\",\n  CURLOPT_POSTFIELDS => json_encode([\n    'name' => 'My Video Translator video',\n    'start_seconds' => 0,\n    'end_seconds' => 15,\n    'target_language' => 'Spanish',\n    'resolution' => '720p',\n    'assets' => [\n        'video_file_path' => 'api-assets/id/1234.mp4'\n    ]\n  ]),\n  CURLOPT_HTTPHEADER => [\n    \"accept: application/json\",\n    \"authorization: Bearer <token>\",\n    \"content-type: application/json\"\n  ],\n]);\n\n$response = curl_exec($curl);\n$err = curl_error($curl);\n\ncurl_close($curl);\n\nif ($err) {\n  echo \"cURL Error #:\" . $err;\n} else {\n  echo $response;\n}"
+          },
+          {
+            "lang": "java",
+            "source": "HttpResponse<String> response = Unirest.post(\"https://api.magichour.ai/v1/ai-video-translator\")\n  .header(\"accept\", \"application/json\")\n  .header(\"content-type\", \"application/json\")\n  .header(\"authorization\", \"Bearer <token>\")\n  .body(\"{\\\"name\\\":\\\"My Video Translator video\\\",\\\"start_seconds\\\":0,\\\"end_seconds\\\":15,\\\"target_language\\\":\\\"Spanish\\\",\\\"resolution\\\":\\\"720p\\\",\\\"assets\\\":{\\\"video_file_path\\\":\\\"api-assets/id/1234.mp4\\\"}}\")\n  .asString();"
           }
         ]
       }
@@ -4237,13 +4251,24 @@
                     "format": "float",
                     "example": 15
                   },
+                  "model": {
+                    "default": "wan-animate",
+                    "type": "string",
+                    "enum": [
+                      "wan-animate",
+                      "kling-3.0"
+                    ],
+                    "description": "Model to use. Defaults to `wan-animate`.\n\n* **`wan-animate`**: 480p, 720p. Supports `points` subject selection.\n* **`kling-3.0`**: 720p, 1080p. Clips of 3–10 seconds in `replace` mode or 3–30 seconds in `animate` mode. Picks the main person automatically, so `points` are rejected.",
+                    "example": "wan-animate"
+                  },
                   "resolution": {
                     "type": "string",
                     "enum": [
                       "480p",
-                      "720p"
+                      "720p",
+                      "1080p"
                     ],
-                    "description": "Output video resolution. Defaults to 480p, the lowest resolution available on your plan.",
+                    "description": "Output video resolution. Must be supported by `model`. Defaults to the lowest resolution available on your plan for that model.",
                     "example": "720p"
                   },
                   "assets": {
@@ -4286,7 +4311,7 @@
                           "auto",
                           "point"
                         ],
-                        "description": "How to locate the subject in the source video. `auto` detects a person automatically. `point` uses your `points` to mark the subject. Defaults to `auto`.",
+                        "description": "How to locate the subject in the source video. `auto` detects a person automatically. `point` uses your `points` to mark the subject and is supported by `wan-animate`. Defaults to `auto`.",
                         "example": "auto"
                       },
                       "points": {
@@ -4320,7 +4345,7 @@
                             "time_seconds"
                           ]
                         },
-                        "description": "On-frame markers for manual subject selection. Required when `selection_mode` is `point`. Ignored when `selection_mode` is `auto` or omitted."
+                        "description": "On-frame markers for manual subject selection. Required when `selection_mode` is `point`. Ignored when `selection_mode` is `auto` or omitted. Rejected for models without subject selection (supported by `wan-animate`)."
                       }
                     },
                     "description": "Optional style controls for replace vs animate mode and subject selection.",
@@ -5010,19 +5035,19 @@
                     "enum": [
                       "default",
                       "kling-3.0",
-                      "gemini-omni-1.1",
-                      "seedance-2.0",
                       "ltx-2.5",
-                      "minimax-h3",
+                      "seedance-2.0-mini",
                       "wan-3.0",
+                      "seedance-2.5",
+                      "gemini-omni-1.1",
+                      "minimax-h3",
                       "wan-2.2",
                       "seedance-1.5",
-                      "seedance-2.0-mini",
-                      "seedance-2.5",
-                      "kling-2.6",
+                      "seedance-2.0",
                       "veo3.1-lite",
-                      "veo3.1",
                       "sora-2",
+                      "veo3.1",
+                      "kling-2.6",
                       "ltx-2.3",
                       "ltx-2",
                       "kling-2.5",
@@ -5764,19 +5789,19 @@
                     "enum": [
                       "default",
                       "kling-3.0",
-                      "gemini-omni-1.1",
-                      "seedance-2.0",
                       "ltx-2.5",
-                      "minimax-h3",
+                      "seedance-2.0-mini",
                       "wan-3.0",
+                      "seedance-2.5",
+                      "gemini-omni-1.1",
+                      "minimax-h3",
                       "wan-2.2",
                       "seedance-1.5",
-                      "seedance-2.0-mini",
-                      "seedance-2.5",
-                      "kling-2.6",
+                      "seedance-2.0",
                       "veo3.1-lite",
-                      "veo3.1",
                       "sora-2",
+                      "veo3.1",
+                      "kling-2.6",
                       "ltx-2.3",
                       "ltx-2",
                       "kling-2.5",
@@ -5799,7 +5824,7 @@
                       "prompt": {
                         "type": "string",
                         "minLength": 1,
-                        "maxLength": 10000,
+                        "maxLength": 20000,
                         "example": "a dog running",
                         "description": "The prompt used for the video."
                       },
@@ -8118,16 +8143,16 @@
                     "type": "string",
                     "enum": [
                       "default",
-                      "nano-banana-2",
-                      "gpt-image-2",
-                      "gpt-image-2.5-flare",
+                      "qwen-edit",
                       "flux-2-klein",
                       "nano-banana-2-lite",
-                      "qwen-edit",
+                      "nano-banana-2",
                       "krea-2",
-                      "seedream-v4",
-                      "seedream-v4.5",
+                      "gpt-image-2.5-flare",
+                      "gpt-image-2",
                       "seedream-v5-pro",
+                      "seedream-v4.5",
+                      "seedream-v4",
                       "nano-banana",
                       "nano-banana-pro"
                     ],
@@ -8781,15 +8806,15 @@
                     "type": "string",
                     "enum": [
                       "default",
-                      "nano-banana-2",
-                      "gpt-image-2",
-                      "gpt-image-2.5-flare",
                       "z-image-turbo",
                       "flux-2-klein",
                       "nano-banana-2-lite",
+                      "nano-banana-2",
                       "krea-2",
-                      "seedream-v4",
+                      "gpt-image-2.5-flare",
+                      "gpt-image-2",
                       "seedream-v5-pro",
+                      "seedream-v4",
                       "nano-banana",
                       "nano-banana-pro",
                       "flux-schnell",
