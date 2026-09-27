@@ -1,4 +1,11 @@
-.PHONY: completions snapshot
+.PHONY: completions snapshot spec
+
+spec:
+	@raw=$$(mktemp); pretty=$$(mktemp api/openapi.json.XXXXXX); \
+	trap 'rm -f "$$raw" "$$pretty"' 0; \
+	curl -fsSL --retry 3 https://magichour.ai/openapi.json -o "$$raw" && \
+	jq -e '.openapi and (.paths | type == "object")' "$$raw" >/dev/null && \
+	jq . "$$raw" > "$$pretty" && mv "$$pretty" api/openapi.json
 
 completions:
 	mkdir -p completions

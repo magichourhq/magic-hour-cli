@@ -77,5 +77,6 @@ mh completion zsh
 `schema` prints machine-readable command definitions. Shell completion is
 available for bash, zsh, fish, and PowerShell.
 
-For contributors: `api/openapi.json` and `api/cli.json` generate the command
-catalog. See [design](DESIGN.md) for architecture.
+For contributors: `make spec` fetches the latest OpenAPI file, and
+`go generate ./...` rebuilds the command catalog from it and `api/cli.json`.
+See [design](DESIGN.md) for architecture.
