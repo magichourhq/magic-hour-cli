@@ -1,6 +1,6 @@
 # CLI design
 
-Status: initial direction agreed; implementation details remain open.
+Status: historical planning notes. See [README](README.md) for current commands.
 
 ## Audience and scope
 
