@@ -61,7 +61,7 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 	cmd := &cobra.Command{Use: op.Name, Short: op.Summary, Example: op.Example, Args: cobra.NoArgs}
 	opts, timeout := executionFlags(cmd)
 	var dryRun bool
-	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate inputs and print the request without making API calls")
+	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate flags and print the request without API calls; local files are not checked")
 	for _, f := range op.Fields {
 		help := strings.ReplaceAll(f.Help, "`", "'")
 		if len(f.Enum) > 0 {
@@ -114,6 +114,9 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 			return err
 		}
 		if dryRun {
+			if err := workflow.ValidateOptions(*opts, body); err != nil {
+				return err
+			}
 			return writeJSON(cmd, map[string]any{"method": "POST", "path": op.Path, "body": body})
 		}
 		return execute(cmd, *timeout, func(ctx context.Context, runner workflow.Runner) (workflow.Result, error) {
