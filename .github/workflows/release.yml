@@ -123,3 +123,64 @@ jobs:
           git push origin "$branch"
           printf 'Update mh formula to v%s using release checksums.\n' "$RELEASE_VERSION" > "$RUNNER_TEMP/tap-pr.md"
           gh pr create --repo magichourhq/homebrew-tap --base main --head "$branch" --title "chore: update mh to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/tap-pr.md"
+
+  update-scoop:
+    needs: release
+    if: needs.release.outputs.version != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      RELEASE_VERSION: ${{ needs.release.outputs.version }}
+    steps:
+      - name: Mint bucket token
+        id: bucket-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.GH_APP_MH_RELEASER_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_MH_RELEASER_PRIVATE_KEY }}
+          owner: magichourhq
+          repositories: scoop-bucket
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: cli
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: magichourhq/scoop-bucket
+          token: ${{ steps.bucket-token.outputs.token }}
+          path: scoop
+      - name: Update manifest
+        id: update
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "v$RELEASE_VERSION" --repo magichourhq/magic-hour-cli --pattern checksums.txt --dir "$RUNNER_TEMP"
+          python3 cli/scripts/update-scoop.py "$RELEASE_VERSION" "$RUNNER_TEMP/checksums.txt" scoop/mh.json
+          if git -C scoop diff --quiet -- mh.json; then
+            echo "Manifest already matches v$RELEASE_VERSION"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Open bucket PR
+        if: steps.update.outputs.changed == 'true'
+        working-directory: scoop
+        env:
+          GH_TOKEN: ${{ steps.bucket-token.outputs.token }}
+        run: |
+          branch="chore/mh-$RELEASE_VERSION"
+          if [ "$(gh pr list --repo magichourhq/scoop-bucket --head "$branch" --state open --json number --jq length)" != 0 ]; then
+            echo "Bucket PR already open for v$RELEASE_VERSION"
+            exit 0
+          fi
+          git switch -c "$branch"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mh.json
+          git commit -m "chore: update mh to v$RELEASE_VERSION"
+          git push origin "$branch"
+          printf 'Update mh Scoop manifest to v%s using release checksums.\n' "$RELEASE_VERSION" > "$RUNNER_TEMP/scoop-pr.md"
+          gh pr create --repo magichourhq/scoop-bucket --base main --head "$branch" --title "chore: update mh to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/scoop-pr.md"
