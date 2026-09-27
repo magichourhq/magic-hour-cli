@@ -9,6 +9,8 @@ jobs:
   release:
     if: github.repository == 'magichourhq/magic-hour-cli'
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.number }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -60,3 +62,64 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GORELEASER_CURRENT_TAG: v${{ steps.version.outputs.number }}
+
+  update-homebrew:
+    needs: release
+    if: needs.release.outputs.version != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      RELEASE_VERSION: ${{ needs.release.outputs.version }}
+    steps:
+      - name: Mint tap token
+        id: tap-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.GH_APP_MH_RELEASER_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_MH_RELEASER_PRIVATE_KEY }}
+          owner: magichourhq
+          repositories: homebrew-tap
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: cli
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: magichourhq/homebrew-tap
+          token: ${{ steps.tap-token.outputs.token }}
+          path: tap
+      - name: Update formula
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "v$RELEASE_VERSION" --repo magichourhq/magic-hour-cli --pattern checksums.txt --dir "$RUNNER_TEMP"
+          python3 cli/scripts/update-homebrew.py "$RELEASE_VERSION" "$RUNNER_TEMP/checksums.txt" tap/Formula/mh.rb
+          if git -C tap diff --quiet -- Formula/mh.rb; then
+            echo "Formula already matches v$RELEASE_VERSION"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+        id: update
+      - name: Open tap PR
+        if: steps.update.outputs.changed == 'true'
+        working-directory: tap
+        env:
+          GH_TOKEN: ${{ steps.tap-token.outputs.token }}
+        run: |
+          branch="chore/mh-$RELEASE_VERSION"
+          if [ "$(gh pr list --repo magichourhq/homebrew-tap --head "$branch" --state open --json number --jq length)" != 0 ]; then
+            echo "Tap PR already open for v$RELEASE_VERSION"
+            exit 0
+          fi
+          git switch -c "$branch"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/mh.rb
+          git commit -m "chore: update mh to v$RELEASE_VERSION"
+          git push origin "$branch"
+          printf 'Update mh formula to v%s using release checksums.\n' "$RELEASE_VERSION" > "$RUNNER_TEMP/tap-pr.md"
+          gh pr create --repo magichourhq/homebrew-tap --base main --head "$branch" --title "chore: update mh to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/tap-pr.md"
