@@ -78,9 +78,10 @@ mh image edit --image landscape.png --prompt 'Make it sunset' --output sunset.pn
 `--count` for multiple images, and `--dry-run` to inspect a request without
 calling the API.
 
-Commands wait and download images by default. `--no-wait` returns a project ID
-immediately; `--no-download` waits but returns output URLs. Output files are
-never overwritten.
+Commands wait and download images by default. Text output shows project ID,
+status, credits charged, and output paths. `--format json` returns the same
+fields for scripts. `--no-wait` returns a queued project immediately;
+`--no-download` waits but returns output URLs. Output files are never overwritten.
 
 ## Manage images
 
