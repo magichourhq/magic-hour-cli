@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"text/tabwriter"
 	"time"
 	"unicode"
 
@@ -155,13 +156,29 @@ func whoamiResult(cmd *cobra.Command, account accountInfo) error {
 			"tier": account.Tier, "credits": account.Credits, "subscription": account.Subscription,
 		})
 	}
-	message := "authenticated as " + account.ID
+	identity := account.ID
 	if account.Email != nil && *account.Email != "" {
-		message = "authenticated as " + *account.Email + " (" + account.ID + ")"
+		identity = *account.Email + " (" + account.ID + ")"
 	}
-	message += fmt.Sprintf("\nTier: %s\nCredits: %d", account.Tier, account.Credits)
-	_, err := fmt.Fprintln(cmd.OutOrStdout(), message)
-	return err
+	w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
+	fmt.Fprintf(w, "Account:\t%s\nTier:\t%s\nCredits:\t%d\n", identity, account.Tier, account.Credits)
+	if len(account.Subscription) > 0 {
+		var subscription *struct {
+			Name   *string `json:"name"`
+			Status string  `json:"status"`
+		}
+		if err := json.Unmarshal(account.Subscription, &subscription); err != nil {
+			return fmt.Errorf("decode subscription: %w", err)
+		}
+		if subscription != nil {
+			name := subscription.Status
+			if subscription.Name != nil && *subscription.Name != "" {
+				name = *subscription.Name + " (" + subscription.Status + ")"
+			}
+			fmt.Fprintf(w, "Subscription:\t%s\n", name)
+		}
+	}
+	return w.Flush()
 }
 
 func authResult(cmd *cobra.Command, status, account string) error {
