@@ -5,14 +5,52 @@ generation, image editing, uploads, project management, and JSON output for scri
 
 ## Install
 
-Download the archive for your OS and CPU from
-[Releases](https://github.com/magichourhq/magic-hour-cli/releases). Verify it with
-`checksums.txt`, unpack it, and put `mh` (or `mh.exe` on Windows) on your `PATH`.
+The CLI, tap, and bucket are private during alpha. Homebrew and Scoop installs
+become available after those repositories are public. For private testing,
+download a release while signed in to GitHub.
 
-On Linux, releases that include `.deb` or `.rpm` packages can be installed
-directly from the downloaded file with `sudo apt install ./file.deb` or
-`sudo dnf install ./file.rpm`. This does not add an APT or DNF repository;
-download a newer package to upgrade.
+### macOS and Linux: Homebrew
+
+With [Homebrew](https://brew.sh) installed:
+
+```sh
+brew install magichourhq/homebrew-tap/mh
+```
+
+### Windows: Scoop
+
+With [Scoop](https://scoop.sh) installed:
+
+```powershell
+scoop bucket add magic-hour https://github.com/magichourhq/scoop-bucket
+scoop install magic-hour/mh
+```
+
+### Linux: Debian/Ubuntu or Fedora/RHEL
+
+If the release includes `.deb` or `.rpm` packages, download the one for your
+CPU from [Releases](https://github.com/magichourhq/magic-hour-cli/releases),
+then install it on Debian/Ubuntu:
+
+```sh
+sudo apt install ./magic-hour-cli_*.deb
+```
+
+Or on Fedora/RHEL:
+
+```sh
+sudo dnf install ./magic-hour-cli-*.rpm
+```
+
+These local installs do not add an APT or DNF repository. Download a newer
+package to upgrade.
+
+### Direct download: any OS
+
+Download the archive for your OS and CPU, plus `checksums.txt`, from
+[Releases](https://github.com/magichourhq/magic-hour-cli/releases). Compare the
+archive's SHA-256 with its entry in `checksums.txt`, extract it, and put `mh`
+(or `mh.exe` on Windows) on your `PATH`.
 
 Run `mh version` to confirm the install.
 
