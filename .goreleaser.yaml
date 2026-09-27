@@ -24,6 +24,24 @@ archives:
       - THIRD_PARTY_NOTICES.txt
       - README.md
       - completions/*
+nfpms:
+  - package_name: magic-hour-cli
+    ids: [mh]
+    formats: [deb, rpm]
+    file_name_template: '{{ .ConventionalFileName }}'
+    vendor: Magic Hour
+    homepage: https://github.com/magichourhq/magic-hour-cli
+    maintainer: Magic Hour <support@magichour.ai>
+    description: Magic Hour command-line tool
+    license: MIT
+    section: utils
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/magic-hour-cli/copyright
+        packager: deb
+      - src: LICENSE
+        dst: /usr/share/licenses/magic-hour-cli/LICENSE
+        packager: rpm
 checksum:
   name_template: checksums.txt
 changelog:

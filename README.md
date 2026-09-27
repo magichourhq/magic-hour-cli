@@ -9,6 +9,11 @@ Download the archive for your OS and CPU from
 [Releases](https://github.com/magichourhq/magic-hour-cli/releases). Verify it with
 `checksums.txt`, unpack it, and put `mh` (or `mh.exe` on Windows) on your `PATH`.
 
+On Linux, releases that include `.deb` or `.rpm` packages can be installed
+directly from the downloaded file with `sudo apt install ./file.deb` or
+`sudo dnf install ./file.rpm`. This does not add an APT or DNF repository;
+download a newer package to upgrade.
+
 Run `mh version` to confirm the install.
 
 ## Authenticate
