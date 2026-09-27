@@ -1,0 +1,52 @@
+name: Update OpenAPI
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+concurrency:
+  group: openapi-update
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - run: make spec
+      - name: Regenerate and validate
+        id: validate
+        continue-on-error: true
+        run: |
+          go generate ./...
+          go vet ./...
+          go test ./...
+          go build ./...
+      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        id: pr
+        with:
+          branch: chore/openapi-update
+          title: 'chore: update OpenAPI snapshot'
+          commit-message: 'chore: update OpenAPI snapshot'
+          add-paths: |
+            api/openapi.json
+            internal/catalog/catalog_gen.go
+          body: |
+            Refresh the API snapshot from https://magichour.ai/openapi.json and regenerate the CLI command catalog.
+
+            Regeneration and validation: **${{ steps.validate.outcome }}**.
+            If this failed, update CLI metadata or generator support before merging.
+      # PRs created with GITHUB_TOKEN do not trigger pull_request checks.
+      - name: Run PR check
+        if: steps.pr.outputs.pull-request-operation == 'created' || steps.pr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BRANCH: ${{ steps.pr.outputs.pull-request-branch }}
+        run: gh workflow run check.yml --ref "$PR_BRANCH"
