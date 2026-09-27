@@ -49,12 +49,19 @@ func printResult(cmd *cobra.Command, result workflow.Result) error {
 	if format == "json" {
 		return writeJSON(cmd, result)
 	}
-	if result.Error != "" {
-		_, err := fmt.Fprintln(cmd.OutOrStdout(), result.ID)
+	if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Project ID:", result.ID); err != nil {
 		return err
 	}
-	if len(result.Outputs) == 0 {
-		_, err := fmt.Fprintln(cmd.OutOrStdout(), result.ID)
+	if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Status:", result.Status); err != nil {
+		return err
+	}
+	if result.CreditsCharged != nil {
+		if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Credits charged:", *result.CreditsCharged); err != nil {
+			return err
+		}
+	}
+	if result.Error != "" {
+		_, err := fmt.Fprintln(cmd.OutOrStdout(), "Error:", result.Error)
 		return err
 	}
 	for _, output := range result.Outputs {
@@ -62,7 +69,7 @@ func printResult(cmd *cobra.Command, result workflow.Result) error {
 		if value == "" {
 			value = output.URL
 		}
-		if _, err := fmt.Fprintln(cmd.OutOrStdout(), value); err != nil {
+		if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Output:", value); err != nil {
 			return err
 		}
 	}

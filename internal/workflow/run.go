@@ -21,12 +21,13 @@ type Output struct {
 }
 
 type Result struct {
-	ID      string          `json:"id"`
-	Type    string          `json:"type"`
-	Status  string          `json:"status"`
-	Outputs []Output        `json:"outputs"`
-	Project json.RawMessage `json:"project,omitempty"`
-	Error   string          `json:"error,omitempty"`
+	ID             string          `json:"id"`
+	Type           string          `json:"type"`
+	Status         string          `json:"status"`
+	CreditsCharged *int            `json:"credits_charged"`
+	Outputs        []Output        `json:"outputs"`
+	Project        json.RawMessage `json:"project,omitempty"`
+	Error          string          `json:"error,omitempty"`
 }
 
 type Options struct {
@@ -104,10 +105,11 @@ func (r Runner) Get(ctx context.Context, kind, id string) (Result, error) {
 		return result, err
 	}
 	var response struct {
-		Status    string   `json:"status"`
-		Downloads []Output `json:"downloads"`
-		Enabled   *bool    `json:"enabled"`
-		Error     *struct {
+		Status         string   `json:"status"`
+		CreditsCharged *int     `json:"credits_charged"`
+		Downloads      []Output `json:"downloads"`
+		Enabled        *bool    `json:"enabled"`
+		Error          *struct {
 			Message string `json:"message"`
 		} `json:"error"`
 	}
@@ -118,6 +120,7 @@ func (r Runner) Get(ctx context.Context, kind, id string) (Result, error) {
 		return result, err
 	}
 	result.Status = response.Status
+	result.CreditsCharged = response.CreditsCharged
 	if response.Downloads != nil {
 		result.Outputs = response.Downloads
 	}
