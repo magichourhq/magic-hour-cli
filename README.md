@@ -70,7 +70,7 @@ To paste an existing [API key](https://magichour.ai/developer) instead, run
 `MAGIC_HOUR_API_KEY`; it takes precedence over the saved key. You can also pipe
 a key from a secret manager into `mh login --key-stdin`.
 
-`mh whoami` checks the active key. `mh logout` removes the saved key;
+`mh whoami` shows the active account's email, tier, and credits. `mh logout` removes the saved key;
 delete it in the Developer Hub to revoke it. An environment key remains active
 after logout.
 

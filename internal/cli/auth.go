@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -73,7 +74,7 @@ func loginCommand() *cobra.Command {
 		if strings.TrimSpace(os.Getenv("MAGIC_HOUR_API_KEY")) != "" {
 			fmt.Fprintln(cmd.ErrOrStderr(), "Saved key; MAGIC_HOUR_API_KEY remains active and takes precedence.")
 		}
-		return authResult(cmd, "logged_in", account)
+		return authResult(cmd, "logged_in", account.ID)
 	}
 	return login
 }
@@ -90,7 +91,7 @@ func whoamiCommand() *cobra.Command {
 		if err != nil {
 			return err
 		}
-		return authResult(cmd, "authenticated", account)
+		return whoamiResult(cmd, account)
 	}}
 }
 
@@ -130,14 +131,37 @@ func logoutCommand() *cobra.Command {
 	}}
 }
 
-func validateKey(ctx context.Context, key string) (string, error) {
-	var account struct {
-		ID string `json:"id"`
-	}
+type accountInfo struct {
+	ID           string          `json:"id"`
+	Email        *string         `json:"email"`
+	Tier         string          `json:"tier"`
+	Credits      int             `json:"credits"`
+	Subscription json.RawMessage `json:"subscription"`
+}
+
+func validateKey(ctx context.Context, key string) (accountInfo, error) {
+	var account accountInfo
 	if err := api.New(key).Do(ctx, http.MethodGet, "/v1/account", nil, &account); err != nil {
-		return "", err
+		return accountInfo{}, err
 	}
-	return account.ID, nil
+	return account, nil
+}
+
+func whoamiResult(cmd *cobra.Command, account accountInfo) error {
+	format, _ := cmd.Flags().GetString("format")
+	if format == "json" {
+		return writeJSON(cmd, map[string]any{
+			"status": "authenticated", "account_id": account.ID, "email": account.Email,
+			"tier": account.Tier, "credits": account.Credits, "subscription": account.Subscription,
+		})
+	}
+	message := "authenticated as " + account.ID
+	if account.Email != nil && *account.Email != "" {
+		message = "authenticated as " + *account.Email + " (" + account.ID + ")"
+	}
+	message += fmt.Sprintf("\nTier: %s\nCredits: %d", account.Tier, account.Credits)
+	_, err := fmt.Fprintln(cmd.OutOrStdout(), message)
+	return err
 }
 
 func authResult(cmd *cobra.Command, status, account string) error {
