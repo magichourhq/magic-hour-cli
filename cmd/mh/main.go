@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/magichourhq/magic-hour-cli/internal/api"
 	"github.com/magichourhq/magic-hour-cli/internal/cli"
@@ -15,7 +16,7 @@ import (
 var version = "dev"
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	root := cli.New(version)
 	if err := root.ExecuteContext(ctx); err != nil {

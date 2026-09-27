@@ -4,8 +4,10 @@ package workflow
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/magichourhq/magic-hour-cli/internal/api"
@@ -134,26 +136,38 @@ func (r Runner) Get(ctx context.Context, kind, id string) (Result, error) {
 
 func (r Runner) Finish(ctx context.Context, kind, id string, opts Options) (Result, error) {
 	lastStatus := ""
+	failedPolls := 0
 	for {
 		result, err := r.Get(ctx, kind, id)
+		delay := 2 * time.Second
 		if err != nil {
-			return result, err
-		}
-		if result.Status != lastStatus {
-			r.note(id + ": " + result.Status)
-			lastStatus = result.Status
-		}
-		switch result.Status {
-		case "complete":
-			if !opts.NoDownload {
-				return r.Download(ctx, result, opts.Output)
+			if ctx.Err() != nil {
+				return result, fmt.Errorf("waiting for %s: %w; resume with mh %s wait %s", id, ctx.Err(), kind, id)
 			}
-			return result, nil
-		case "queued", "rendering":
-		default:
-			return result, fmt.Errorf("project %s has non-pollable status %q", id, result.Status)
+			if !retryablePoll(err) || failedPolls == 3 {
+				return result, fmt.Errorf("poll %s: %w; resume with mh %s wait %s", id, err, kind, id)
+			}
+			failedPolls++
+			delay = time.Duration(1<<failedPolls) * time.Second
+			r.note(fmt.Sprintf("Poll failed (%d/3); retrying…", failedPolls))
+		} else {
+			failedPolls = 0
+			if result.Status != lastStatus {
+				r.note(id + ": " + result.Status)
+				lastStatus = result.Status
+			}
+			switch result.Status {
+			case "complete":
+				if !opts.NoDownload {
+					return r.Download(ctx, result, opts.Output)
+				}
+				return result, nil
+			case "queued", "rendering":
+			default:
+				return result, fmt.Errorf("project %s has non-pollable status %q", id, result.Status)
+			}
 		}
-		timer := time.NewTimer(2 * time.Second)
+		timer := time.NewTimer(delay)
 		select {
 		case <-ctx.Done():
 			timer.Stop()
@@ -161,4 +175,13 @@ func (r Runner) Finish(ctx context.Context, kind, id string, opts Options) (Resu
 		case <-timer.C:
 		}
 	}
+}
+
+func retryablePoll(err error) bool {
+	var apiErr *api.Error
+	if errors.As(err, &apiErr) {
+		return apiErr.Status == http.StatusRequestTimeout || apiErr.Status == http.StatusTooManyRequests || apiErr.Status >= 500
+	}
+	var urlErr *url.Error
+	return errors.As(err, &urlErr)
 }
