@@ -58,7 +58,13 @@ func New(version string) *cobra.Command {
 }
 
 func operationCommand(op catalog.Operation) *cobra.Command {
-	cmd := &cobra.Command{Use: op.Name, Short: op.Summary, Example: op.Example, Args: cobra.NoArgs}
+	use, args := op.Name, cobra.NoArgs
+	positionalPrompt := op.Group == "image" && op.Name == "generate"
+	if positionalPrompt {
+		use += " [prompt]"
+		args = cobra.MaximumNArgs(1)
+	}
+	cmd := &cobra.Command{Use: use, Short: op.Summary, Example: op.Example, Args: args}
 	opts, timeout := executionFlags(cmd)
 	var dryRun bool
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate flags and print the request without API calls; local files are not checked")
@@ -109,6 +115,12 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 				s, _ := cmd.Flags().GetString(f.Flag)
 				values[f.Flag] = []string{s}
 			}
+		}
+		if positionalPrompt && len(args) == 1 {
+			if cmd.Flags().Changed("prompt") {
+				return fmt.Errorf("provide prompt as an argument or --prompt, not both")
+			}
+			values["prompt"] = []string{args[0]}
 		}
 		if err := resolveStdin(readCtx, cmd.InOrStdin(), op, values); err != nil {
 			return err

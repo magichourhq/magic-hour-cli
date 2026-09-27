@@ -3,7 +3,7 @@
 package catalog
 
 var Operations = []Operation{
-	{ID: "aiImageGenerator.createImage", Group: "image", Name: "generate", Kind: "image", Path: "/v1/ai-image-generator", Summary: "AI Image Generator", Example: "mh image generate --prompt 'A cinematic mountain landscape'",
+	{ID: "aiImageGenerator.createImage", Group: "image", Name: "generate", Kind: "image", Path: "/v1/ai-image-generator", Summary: "AI Image Generator", Example: "mh image generate 'A cinematic mountain landscape'",
 		Fields: []Field{
 			{Flag: "aspect-ratio", Path: []string{"aspect_ratio"}, Type: "string", Help: "The aspect ratio of the output image(s). If not specified, defaults to `1:1` (square).", Required: false, Default: "", Enum: []string{"1:1", "16:9", "9:16"}, Minimum: "", Maximum: "", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: ""},
 			{Flag: "count", Path: []string{"image_count"}, Type: "integer", Help: "Number of images to generate. Maximum varies by model.", Required: true, Default: "1", Enum: []string(nil), Minimum: "1", Maximum: "16", MinLength: 0, MaxLength: 0, MinItems: 0, MaxItems: 0, FileKind: ""},

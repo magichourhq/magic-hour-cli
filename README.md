@@ -70,7 +70,7 @@ You can also pipe a key from a secret manager into `mh auth login --key-stdin`.
 ## Generate and edit
 
 ```sh
-mh image generate --prompt 'A mountain landscape at sunrise' --output landscape.png
+mh image generate 'A mountain landscape at sunrise' --output landscape.png
 mh image edit --image landscape.png --prompt 'Make it sunset' --output sunset.png
 ```
 
@@ -85,7 +85,7 @@ never overwritten.
 ## Manage images
 
 ```sh
-mh image generate --prompt 'A mountain landscape' --no-wait --format json
+mh image generate 'A mountain landscape' --no-wait --format json
 mh image wait PROJECT_ID
 mh image download PROJECT_ID --output landscape.png
 mh image get PROJECT_ID --format json

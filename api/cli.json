@@ -4,7 +4,7 @@
     "group": "image",
     "name": "generate",
     "kind": "image",
-    "example": "mh image generate --prompt 'A cinematic mountain landscape'",
+    "example": "mh image generate 'A cinematic mountain landscape'",
     "overrides": {
       "style.prompt": {"flag": "prompt"},
       "image_count": {"flag": "count", "default": "1"}
