@@ -36,6 +36,12 @@ nfpms:
     license: MIT
     section: utils
     contents:
+      - src: completions/mh.bash
+        dst: /usr/share/bash-completion/completions/mh
+      - src: completions/mh.zsh
+        dst: /usr/share/zsh/site-functions/_mh
+      - src: completions/mh.fish
+        dst: /usr/share/fish/vendor_completions.d/mh.fish
       - src: LICENSE
         dst: /usr/share/doc/magic-hour-cli/copyright
         packager: deb

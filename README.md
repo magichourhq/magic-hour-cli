@@ -117,8 +117,9 @@ mh schema image edit
 mh completion zsh
 ```
 
-`schema` prints machine-readable command definitions. Shell completion is
-available for bash, zsh, fish, and PowerShell.
+`schema` prints machine-readable command definitions. Homebrew and Linux
+packages install shell completion automatically. Direct-download archives
+include scripts for bash, zsh, fish, and PowerShell.
 
 For contributors: `make spec` fetches the latest OpenAPI file, and
 `go generate ./...` rebuilds the command catalog from it and `api/cli.json`.
