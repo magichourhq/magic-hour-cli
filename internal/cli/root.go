@@ -63,7 +63,11 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 	var dryRun bool
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate flags and print the request without API calls; local files are not checked")
 	for _, f := range op.Fields {
-		help := strings.ReplaceAll(f.Help, "`", "'")
+		help := strings.ReplaceAll(strings.SplitN(f.Help, "\n", 2)[0], "`", "'")
+		if strings.Contains(f.Help, "\n") {
+			help = strings.TrimSuffix(help, ".")
+			help += fmt.Sprintf("; details: mh schema %s %s", op.Group, op.Name)
+		}
 		if len(f.Enum) > 0 {
 			help = strings.TrimSuffix(help, ".")
 		}
