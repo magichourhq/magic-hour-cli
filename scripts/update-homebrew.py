@@ -18,7 +18,11 @@ def update(version: str, checksums_path: Path, formula_path: Path) -> None:
             raise ValueError(f"invalid checksum for {name}")
         checksums[name] = digest
 
-    values = {"VERSION": version}
+    name = formula_path.stem
+    classes = {"mh": "Mh", "mh-dev": "MhDev"}
+    if name not in classes:
+        raise ValueError(f"unsupported formula: {name}")
+    values = {"VERSION": version, "FORMULA_CLASS": classes[name], "BIN_NAME": name}
     template = Path(__file__).with_name("mh.rb.template").read_text()
     for platform in ("darwin_arm64", "darwin_amd64", "linux_arm64", "linux_amd64"):
         archive = f"mh_{version}_{platform}.tar.gz"
