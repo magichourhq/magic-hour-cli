@@ -161,7 +161,7 @@ func whoamiResult(cmd *cobra.Command, account accountInfo) error {
 		identity = *account.Email + " (" + account.ID + ")"
 	}
 	w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
-	fmt.Fprintf(w, "Account:\t%s\nTier:\t%s\nCredits:\t%d available\n", identity, account.Tier, account.Credits)
+	fmt.Fprintf(w, "Account:\t%s\nTier:\t%s\nCredits:\t%d\n", identity, account.Tier, account.Credits)
 	if len(account.Subscription) > 0 {
 		var subscription *struct {
 			Name   *string `json:"name"`
