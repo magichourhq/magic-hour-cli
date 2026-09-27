@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Update the tap formula from a completed Magic Hour CLI release."""
+"""Render the tap formula from a completed Magic Hour CLI release."""
 
 import re
 import sys
 from pathlib import Path
+from string import Template
 
 
 def update(version: str, checksums_path: Path, formula_path: Path) -> None:
@@ -17,23 +18,16 @@ def update(version: str, checksums_path: Path, formula_path: Path) -> None:
             raise ValueError(f"invalid checksum for {name}")
         checksums[name] = digest
 
-    formula = formula_path.read_text()
-    formula, count = re.subn(r'(?m)^  version "[^"]+"$', f'  version "{version}"', formula)
-    if count != 1:
-        raise ValueError("expected one formula version")
-
+    values = {"VERSION": version}
+    template = Path(__file__).with_name("mh.rb.template").read_text()
     for platform in ("darwin_arm64", "darwin_amd64", "linux_arm64", "linux_amd64"):
         archive = f"mh_{version}_{platform}.tar.gz"
-        digest = checksums[archive]
-        url = f"https://github.com/magichourhq/magic-hour-cli/releases/download/v{version}/{archive}"
-        pattern = re.compile(
-            rf'(?m)^([ \t]*)url "https://github\.com/magichourhq/magic-hour-cli/releases/download/v[^\"]+/mh_[^\"]+_{platform}\.tar\.gz"\n\1sha256 "[0-9a-f]{{64}}"$'
-        )
-        formula, count = pattern.subn(lambda match: f'{match[1]}url "{url}"\n{match[1]}sha256 "{digest}"', formula)
-        if count != 1:
-            raise ValueError(f"expected one URL and checksum for {platform}")
+        key = f"SHA_{platform.upper()}"
+        if template.count("${" + key + "}") != 1:
+            raise ValueError(f"expected one {key} placeholder")
+        values[key] = checksums[archive]
 
-    formula_path.write_text(formula)
+    formula_path.write_text(Template(template).substitute(values))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,37 @@
+class Mh < Formula
+  desc "Magic Hour command-line tool"
+  homepage "https://github.com/magichourhq/magic-hour-cli"
+  version "${VERSION}"
+  license "MIT"
+
+  on_macos do
+    if Hardware::CPU.arm?
+      url "https://github.com/magichourhq/magic-hour-cli/releases/download/v${VERSION}/mh_${VERSION}_darwin_arm64.tar.gz"
+      sha256 "${SHA_DARWIN_ARM64}"
+    else
+      url "https://github.com/magichourhq/magic-hour-cli/releases/download/v${VERSION}/mh_${VERSION}_darwin_amd64.tar.gz"
+      sha256 "${SHA_DARWIN_AMD64}"
+    end
+  end
+
+  on_linux do
+    if Hardware::CPU.arm?
+      url "https://github.com/magichourhq/magic-hour-cli/releases/download/v${VERSION}/mh_${VERSION}_linux_arm64.tar.gz"
+      sha256 "${SHA_LINUX_ARM64}"
+    else
+      url "https://github.com/magichourhq/magic-hour-cli/releases/download/v${VERSION}/mh_${VERSION}_linux_amd64.tar.gz"
+      sha256 "${SHA_LINUX_AMD64}"
+    end
+  end
+
+  def install
+    bin.install "mh"
+    bash_completion.install "completions/mh.bash" => "mh"
+    zsh_completion.install "completions/mh.zsh" => "_mh"
+    fish_completion.install "completions/mh.fish"
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/mh version")
+  end
+end
