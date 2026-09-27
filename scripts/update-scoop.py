@@ -18,7 +18,12 @@ def update(version: str, checksums_path: Path, manifest_path: Path) -> None:
             raise ValueError(f"invalid checksum for {name}")
         checksums[name] = digest
 
-    manifest = json.loads(manifest_path.read_text())
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text())
+    elif manifest_path.stem == "mh-preview":
+        manifest = json.loads(Path(__file__).with_name("mh-preview.json.template").read_text())
+    else:
+        raise FileNotFoundError(manifest_path)
     manifest["version"] = version
     for architecture, goarch in (("64bit", "amd64"), ("arm64", "arm64")):
         archive = f"mh_{version}_windows_{goarch}.zip"

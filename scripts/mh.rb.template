@@ -1,4 +1,4 @@
-class Mh < Formula
+class ${FORMULA_CLASS} < Formula
   desc "Magic Hour command-line tool"
   homepage "https://github.com/magichourhq/magic-hour-cli"
   version "${VERSION}"
@@ -25,13 +25,11 @@ class Mh < Formula
   end
 
   def install
-    bin.install "mh"
-    bash_completion.install "completions/mh.bash" => "mh"
-    zsh_completion.install "completions/mh.zsh" => "_mh"
-    fish_completion.install "completions/mh.fish"
+    bin.install "mh" => "${BIN_NAME}"
+    generate_completions_from_executable(bin/"${BIN_NAME}", shell_parameter_format: :cobra)
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/mh version")
+    assert_match version.to_s, shell_output("#{bin}/${BIN_NAME} version")
   end
 end

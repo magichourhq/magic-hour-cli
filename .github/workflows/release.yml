@@ -65,12 +65,13 @@ jobs:
 
   update-homebrew:
     needs: release
-    if: needs.release.outputs.version != '' && !contains(needs.release.outputs.version, '-')
+    if: needs.release.outputs.version != ''
     runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
       RELEASE_VERSION: ${{ needs.release.outputs.version }}
+      PACKAGE_NAME: ${{ contains(needs.release.outputs.version, '-') && 'mh-preview' || 'mh' }}
     steps:
       - name: Mint tap token
         id: tap-token
@@ -96,9 +97,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release download "v$RELEASE_VERSION" --repo magichourhq/magic-hour-cli --pattern checksums.txt --dir "$RUNNER_TEMP"
-          python3 cli/scripts/update-homebrew.py "$RELEASE_VERSION" "$RUNNER_TEMP/checksums.txt" tap/Formula/mh.rb
-          if git -C tap diff --quiet -- Formula/mh.rb; then
-            echo "Formula already matches v$RELEASE_VERSION"
+          formula="Formula/$PACKAGE_NAME.rb"
+          python3 cli/scripts/update-homebrew.py "$RELEASE_VERSION" "$RUNNER_TEMP/checksums.txt" "tap/$formula"
+          if [ -z "$(git -C tap status --porcelain -- "$formula")" ]; then
+            echo "$PACKAGE_NAME formula already matches v$RELEASE_VERSION"
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -110,7 +112,7 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.tap-token.outputs.token }}
         run: |
-          branch="chore/mh-$RELEASE_VERSION"
+          branch="chore/$PACKAGE_NAME-$RELEASE_VERSION"
           if [ "$(gh pr list --repo magichourhq/homebrew-tap --head "$branch" --state open --json number --jq length)" != 0 ]; then
             echo "Tap PR already open for v$RELEASE_VERSION"
             exit 0
@@ -118,20 +120,21 @@ jobs:
           git switch -c "$branch"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Formula/mh.rb
-          git commit -m "chore: update mh to v$RELEASE_VERSION"
+          git add "Formula/$PACKAGE_NAME.rb"
+          git commit -m "chore: update $PACKAGE_NAME to v$RELEASE_VERSION"
           git push origin "$branch"
-          printf 'Update mh formula to v%s using release checksums.\n' "$RELEASE_VERSION" > "$RUNNER_TEMP/tap-pr.md"
-          gh pr create --repo magichourhq/homebrew-tap --base main --head "$branch" --title "chore: update mh to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/tap-pr.md"
+          printf 'Update %s formula to v%s using release checksums.\n' "$PACKAGE_NAME" "$RELEASE_VERSION" > "$RUNNER_TEMP/tap-pr.md"
+          gh pr create --repo magichourhq/homebrew-tap --base main --head "$branch" --title "chore: update $PACKAGE_NAME to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/tap-pr.md"
 
   update-scoop:
     needs: release
-    if: needs.release.outputs.version != '' && !contains(needs.release.outputs.version, '-')
+    if: needs.release.outputs.version != ''
     runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
       RELEASE_VERSION: ${{ needs.release.outputs.version }}
+      PACKAGE_NAME: ${{ contains(needs.release.outputs.version, '-') && 'mh-preview' || 'mh' }}
     steps:
       - name: Mint bucket token
         id: bucket-token
@@ -158,9 +161,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release download "v$RELEASE_VERSION" --repo magichourhq/magic-hour-cli --pattern checksums.txt --dir "$RUNNER_TEMP"
-          python3 cli/scripts/update-scoop.py "$RELEASE_VERSION" "$RUNNER_TEMP/checksums.txt" scoop/mh.json
-          if git -C scoop diff --quiet -- mh.json; then
-            echo "Manifest already matches v$RELEASE_VERSION"
+          manifest="$PACKAGE_NAME.json"
+          python3 cli/scripts/update-scoop.py "$RELEASE_VERSION" "$RUNNER_TEMP/checksums.txt" "scoop/$manifest"
+          if [ -z "$(git -C scoop status --porcelain -- "$manifest")" ]; then
+            echo "$PACKAGE_NAME manifest already matches v$RELEASE_VERSION"
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -171,7 +175,7 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.bucket-token.outputs.token }}
         run: |
-          branch="chore/mh-$RELEASE_VERSION"
+          branch="chore/$PACKAGE_NAME-$RELEASE_VERSION"
           if [ "$(gh pr list --repo magichourhq/scoop-bucket --head "$branch" --state open --json number --jq length)" != 0 ]; then
             echo "Bucket PR already open for v$RELEASE_VERSION"
             exit 0
@@ -179,8 +183,8 @@ jobs:
           git switch -c "$branch"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add mh.json
-          git commit -m "chore: update mh to v$RELEASE_VERSION"
+          git add "$PACKAGE_NAME.json"
+          git commit -m "chore: update $PACKAGE_NAME to v$RELEASE_VERSION"
           git push origin "$branch"
-          printf 'Update mh Scoop manifest to v%s using release checksums.\n' "$RELEASE_VERSION" > "$RUNNER_TEMP/scoop-pr.md"
-          gh pr create --repo magichourhq/scoop-bucket --base main --head "$branch" --title "chore: update mh to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/scoop-pr.md"
+          printf 'Update %s Scoop manifest to v%s using release checksums.\n' "$PACKAGE_NAME" "$RELEASE_VERSION" > "$RUNNER_TEMP/scoop-pr.md"
+          gh pr create --repo magichourhq/scoop-bucket --base main --head "$branch" --title "chore: update $PACKAGE_NAME to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/scoop-pr.md"
