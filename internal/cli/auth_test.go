@@ -48,7 +48,7 @@ func TestAuthLoginStatusLogout(t *testing.T) {
 		t.Fatalf("saved key: %q, %v", key, err)
 	}
 	out, err = run("", "whoami")
-	if err != nil || !strings.Contains(out, "authenticated as account-1") {
+	if err != nil || !strings.Contains(out, "Account:  account-1") {
 		t.Fatalf("status: output %q, error %v", out, err)
 	}
 	if _, err := run("invalid-key\n", "login", "--key-stdin"); err == nil {
