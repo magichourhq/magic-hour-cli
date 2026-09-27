@@ -1,15 +1,16 @@
 # Magic Hour CLI
 
-Generate and edit images from your terminal with `mh`. This alpha supports image
-generation, image editing, uploads, project management, and JSON output for scripts.
+Generate and edit images from your terminal with `mh`. It uploads local inputs,
+waits for the project to finish, and downloads the result.
 
 ## Install
 
-The CLI, tap, and bucket are private during alpha. Homebrew and Scoop installs
-become available after those repositories are public. For private testing,
-download a release while signed in to GitHub.
+The CLI and package repositories are private during prerelease testing.
+Homebrew and Scoop installs will work once the repositories are public. Dev
+releases do not update those packages; use a manual install to try the latest
+dev version.
 
-### macOS and Linux: Homebrew
+### Homebrew: macOS and Linux
 
 With [Homebrew](https://brew.sh) installed:
 
@@ -17,7 +18,7 @@ With [Homebrew](https://brew.sh) installed:
 brew install magichourhq/tap/mh
 ```
 
-### Windows: Scoop
+### Scoop: Windows
 
 With [Scoop](https://scoop.sh) installed:
 
@@ -26,53 +27,55 @@ scoop bucket add magic-hour https://github.com/magichourhq/scoop-bucket
 scoop install magic-hour/mh
 ```
 
-### Linux: Debian/Ubuntu or Fedora/RHEL
+### Manual install
 
-If the release includes `.deb` or `.rpm` packages, download the one for your
-CPU from [Releases](https://github.com/magichourhq/magic-hour-cli/releases),
-then install it on Debian/Ubuntu:
+If you have repository access, download the current version from
+[Releases](https://github.com/magichourhq/magic-hour-cli/releases).
+
+#### Release archive: macOS, Linux, Windows
+
+Download the archive for your OS and CPU, plus `checksums.txt`. Compare the
+archive's SHA-256 with its entry in `checksums.txt`, extract it, and put `mh`
+(`mh.exe` on Windows) on your `PATH`. Run `mh version` to check the install.
+
+Archives include completion scripts for bash, zsh, fish, and PowerShell.
+
+#### Linux packages
+
+Download the `.deb` or `.rpm` for your CPU from
+[Releases](https://github.com/magichourhq/magic-hour-cli/releases). On Debian or
+Ubuntu:
 
 ```sh
 sudo apt install ./magic-hour-cli_*.deb
 ```
 
-Or on Fedora/RHEL:
+On Fedora or RHEL:
 
 ```sh
 sudo dnf install ./magic-hour-cli-*.rpm
 ```
 
-These local installs do not add an APT or DNF repository. Download a newer
-package to upgrade.
+These packages install shell completion but do not add an APT or DNF repository.
+Download a newer package to upgrade.
 
-### Direct download: any OS
-
-Download the archive for your OS and CPU, plus `checksums.txt`, from
-[Releases](https://github.com/magichourhq/magic-hour-cli/releases). Compare the
-archive's SHA-256 with its entry in `checksums.txt`, extract it, and put `mh`
-(or `mh.exe` on Windows) on your `PATH`.
-
-Run `mh version` to confirm the install.
-
-## Authenticate
-
-Log in through your browser:
+## Log in
 
 ```sh
 mh login
 ```
 
-Approve the request on Magic Hour. The CLI saves a new API key for future runs.
-If the browser does not open, follow the URL printed in your terminal.
+Approve the request in your browser. The CLI saves an API key for later commands.
+If the browser does not open, visit the URL printed in your terminal.
 
-To paste an existing [API key](https://magichour.ai/developer) instead, run
-`mh login --interactive`. Input is hidden. For scripts and agents, set
-`MAGIC_HOUR_API_KEY`; it takes precedence over the saved key. You can also pipe
-a key from a secret manager into `mh login --key-stdin`.
+To paste an existing [API key](https://magichour.ai/developer), run
+`mh login --interactive`. Your input is hidden. For scripts and agents, set
+`MAGIC_HOUR_API_KEY`; it takes precedence over a saved key. You can also pipe a
+key from a secret manager into `mh login --key-stdin`.
 
-`mh whoami` shows the active account's email, tier, and credits. `mh logout` removes the saved key;
-delete it in the Developer Hub to revoke it. An environment key remains active
-after logout.
+`mh whoami` shows your account, tier, and credits. `mh logout` removes the saved
+key, but does not revoke it. Revoke it in the Developer Hub if needed. An
+environment key stays active after logout.
 
 ## Generate and edit
 
@@ -81,16 +84,18 @@ mh image generate --prompt 'A mountain landscape at sunrise' --output landscape.
 mh image edit --image landscape.png --prompt 'Make it sunset' --output sunset.png
 ```
 
-`--image` accepts a local path or URL. Local files upload automatically. Use
-`--count` for multiple images, and `--dry-run` to inspect a request without
-calling the API.
+`--image` accepts a local path or URL. Local files upload automatically. Without
+`--output`, files go to the current directory as `mh-<project-id>-<number>.<ext>`.
+For multiple images, use `--count`. If you also set `--output`, it must point to
+an existing directory. The CLI never overwrites output files.
 
-Commands wait and download images by default. Text output shows project ID,
-status, credits charged, and output paths. `--format json` returns the same
-fields for scripts. `--no-wait` returns a queued project immediately;
-`--no-download` waits but returns output URLs. Output files are never overwritten.
+Commands wait and download by default. `--no-wait` returns the project ID
+immediately; `--no-download` waits and returns output URLs. Text output shows
+the project ID, status, output paths or URLs, and credits charged when available.
+`--format json` returns structured fields for scripts. `--dry-run` prints the
+request without calling the API or checking local input files.
 
-## Manage images
+## Manage image projects
 
 ```sh
 mh image generate --prompt 'A mountain landscape' --no-wait --format json
@@ -100,7 +105,8 @@ mh image get PROJECT_ID --format json
 mh image delete PROJECT_ID
 ```
 
-`wait` does not download. `delete` is immediate. Use `--timeout` to set a
+`wait` checks for completion but does not download. `download` requires a
+completed project. `delete` takes effect immediately. Use `--timeout` to set a
 command time limit.
 
 ## Chain commands
@@ -111,10 +117,10 @@ mh image generate --prompt 'A mountain landscape' --no-download --format json |
   mh image edit --image - --prompt 'Make it sunset' --output sunset.png
 ```
 
-`--image -` reads one completed `mh --format json` result from stdin. JSON output
-goes to stdout; progress goes to stderr. For scripts and agents, pass required
-flags explicitly and use `--format json`. Missing inputs fail with an example;
-commands do not prompt or read stdin implicitly.
+`--image -` reads one completed `mh --format json` result from stdin. JSON goes
+to stdout; progress goes to stderr. Pass required flags explicitly in scripts.
+Generation commands do not prompt or read stdin unless you pass `-` to an input
+flag.
 
 ## Explore commands
 
@@ -125,10 +131,9 @@ mh schema image edit
 mh completion zsh
 ```
 
-`schema` prints machine-readable command definitions. Homebrew and Linux
-packages install shell completion automatically. Direct-download archives
-include scripts for bash, zsh, fish, and PowerShell.
+`schema` prints machine-readable command definitions. Shell completion includes
+model names. Homebrew and Linux packages install completion automatically;
+direct-download archives include the scripts.
 
-For contributors: `make spec` fetches the latest OpenAPI file, and
+For contributors, `make spec` fetches the latest OpenAPI file and
 `go generate ./...` rebuilds the command catalog from it and `api/cli.json`.
-See [design](DESIGN.md) for architecture.
