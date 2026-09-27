@@ -34,7 +34,7 @@ func Key() (string, error) {
 	if key := strings.TrimSpace(cfg.APIKey); key != "" {
 		return key, nil
 	}
-	return "", fmt.Errorf("missing API key; set MAGIC_HOUR_API_KEY or run mh auth login --key-stdin")
+	return "", fmt.Errorf("missing API key; run mh login or set MAGIC_HOUR_API_KEY")
 }
 
 func Path() (string, error) {

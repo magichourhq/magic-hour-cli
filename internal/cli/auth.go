@@ -12,25 +12,53 @@ import (
 	"github.com/magichourhq/magic-hour-cli/internal/api"
 	"github.com/magichourhq/magic-hour-cli/internal/config"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 func addAuth(root *cobra.Command) {
-	group := &cobra.Command{Use: "auth", Short: "Manage API credentials"}
-	login := &cobra.Command{Use: "login", Short: "Validate and save an API key", Args: cobra.NoArgs}
-	keyStdin := login.Flags().Bool("key-stdin", false, "Read API key from stdin instead of MAGIC_HOUR_API_KEY")
+	root.AddCommand(loginCommand(), whoamiCommand(), logoutCommand())
+}
+
+func loginCommand() *cobra.Command {
+	login := &cobra.Command{Use: "login", Short: "Log in through your browser", Args: cobra.NoArgs}
+	interactive := login.Flags().BoolP("interactive", "i", false, "Paste an API key instead of using your browser")
+	keyStdin := login.Flags().Bool("key-stdin", false, "Read an API key from stdin")
 	login.RunE = func(cmd *cobra.Command, args []string) error {
-		ctx, cancel := context.WithTimeout(cmd.Context(), time.Minute)
+		if *interactive && *keyStdin {
+			return fmt.Errorf("--interactive and --key-stdin cannot be combined")
+		}
+		ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Minute)
 		defer cancel()
-		key := strings.TrimSpace(os.Getenv("MAGIC_HOUR_API_KEY"))
-		if *keyStdin {
+		var key string
+		if *interactive {
+			if !term.IsTerminal(int(os.Stdin.Fd())) {
+				return fmt.Errorf("--interactive requires a terminal; use --key-stdin or MAGIC_HOUR_API_KEY for automation")
+			}
+			fmt.Fprint(cmd.ErrOrStderr(), "Enter your API key: ")
+			data, err := readPassword(ctx)
+			fmt.Fprintln(cmd.ErrOrStderr())
+			if err != nil {
+				return fmt.Errorf("read API key: %w", err)
+			}
+			key = strings.TrimSpace(string(data))
+		} else if *keyStdin {
 			data, err := readInput(ctx, cmd.InOrStdin(), 16<<10)
 			if err != nil {
 				return err
 			}
 			key = strings.TrimSpace(string(data))
+		} else {
+			if !term.IsTerminal(int(os.Stdin.Fd())) {
+				return fmt.Errorf("browser login requires a terminal; use MAGIC_HOUR_API_KEY or --key-stdin for automation")
+			}
+			var err error
+			key, err = browserLogin(ctx, cmd.ErrOrStderr())
+			if err != nil {
+				return err
+			}
 		}
 		if key == "" {
-			return fmt.Errorf("set MAGIC_HOUR_API_KEY or pass --key-stdin")
+			return fmt.Errorf("API key is empty")
 		}
 		if strings.IndexFunc(key, unicode.IsSpace) >= 0 {
 			return fmt.Errorf("API key must not contain whitespace")
@@ -42,9 +70,16 @@ func addAuth(root *cobra.Command) {
 		if err := config.Save(key); err != nil {
 			return err
 		}
+		if strings.TrimSpace(os.Getenv("MAGIC_HOUR_API_KEY")) != "" {
+			fmt.Fprintln(cmd.ErrOrStderr(), "Saved key; MAGIC_HOUR_API_KEY remains active and takes precedence.")
+		}
 		return authResult(cmd, "logged_in", account)
 	}
-	status := &cobra.Command{Use: "status", Short: "Validate active API key", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, args []string) error {
+	return login
+}
+
+func whoamiCommand() *cobra.Command {
+	return &cobra.Command{Use: "whoami", Short: "Show the account for the active API key", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, args []string) error {
 		key, err := config.Key()
 		if err != nil {
 			return err
@@ -57,7 +92,34 @@ func addAuth(root *cobra.Command) {
 		}
 		return authResult(cmd, "authenticated", account)
 	}}
-	logout := &cobra.Command{Use: "logout", Short: "Remove saved API key", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, args []string) error {
+}
+
+func readPassword(ctx context.Context) ([]byte, error) {
+	fd := int(os.Stdin.Fd())
+	state, err := term.GetState(fd)
+	if err != nil {
+		return nil, err
+	}
+	type result struct {
+		value []byte
+		err   error
+	}
+	done := make(chan result, 1)
+	go func() {
+		value, err := term.ReadPassword(fd)
+		done <- result{value, err}
+	}()
+	select {
+	case read := <-done:
+		return read.value, read.err
+	case <-ctx.Done():
+		_ = term.Restore(fd, state)
+		return nil, ctx.Err()
+	}
+}
+
+func logoutCommand() *cobra.Command {
+	return &cobra.Command{Use: "logout", Short: "Remove saved API key", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, args []string) error {
 		if err := config.Logout(); err != nil {
 			return err
 		}
@@ -66,8 +128,6 @@ func addAuth(root *cobra.Command) {
 		}
 		return authResult(cmd, "logged_out", "")
 	}}
-	group.AddCommand(login, status, logout)
-	root.AddCommand(group)
 }
 
 func validateKey(ctx context.Context, key string) (string, error) {

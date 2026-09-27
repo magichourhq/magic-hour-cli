@@ -40,26 +40,24 @@ func TestAuthLoginStatusLogout(t *testing.T) {
 		return out.String(), err
 	}
 
-	out, err := run("valid-key\n", "auth", "login", "--key-stdin", "--format", "json")
+	out, err := run("valid-key\n", "login", "--key-stdin", "--format", "json")
 	if err != nil || !strings.Contains(out, `"account_id": "account-1"`) || strings.Contains(out, "valid-key") {
 		t.Fatalf("login: output %q, error %v", out, err)
 	}
 	if key, err := config.Key(); err != nil || key != "valid-key" {
 		t.Fatalf("saved key: %q, %v", key, err)
 	}
-	out, err = run("", "auth", "status")
+	out, err = run("", "whoami")
 	if err != nil || !strings.Contains(out, "authenticated as account-1") {
 		t.Fatalf("status: output %q, error %v", out, err)
 	}
-	t.Setenv("MAGIC_HOUR_API_KEY", "invalid-key")
-	if _, err := run("", "auth", "login"); err == nil {
+	if _, err := run("invalid-key\n", "login", "--key-stdin"); err == nil {
 		t.Fatal("invalid login succeeded")
 	}
-	t.Setenv("MAGIC_HOUR_API_KEY", "")
 	if key, err := config.Key(); err != nil || key != "valid-key" {
 		t.Fatalf("invalid login replaced saved key: %q, %v", key, err)
 	}
-	if _, err := run("", "auth", "logout"); err != nil {
+	if _, err := run("", "logout"); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
