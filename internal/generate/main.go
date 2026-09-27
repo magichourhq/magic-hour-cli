@@ -180,7 +180,7 @@ func flatten(raw json.RawMessage, path []string, required bool) ([]catalog.Field
 		}
 		return fields, nil
 	}
-	f := catalog.Field{Flag: strings.ReplaceAll(strings.Join(path, "-"), "_", "-"), Path: path, Type: s.Type, Help: strings.Split(s.Description, "\n")[0], Required: required, Minimum: string(s.Minimum), Maximum: string(s.Maximum), MinLength: s.MinLength, MaxLength: s.MaxLength, MinItems: s.MinItems, MaxItems: s.MaxItems}
+	f := catalog.Field{Flag: strings.ReplaceAll(strings.Join(path, "-"), "_", "-"), Path: path, Type: s.Type, Help: strings.TrimSpace(s.Description), Required: required, Minimum: string(s.Minimum), Maximum: string(s.Maximum), MinLength: s.MinLength, MaxLength: s.MaxLength, MinItems: s.MinItems, MaxItems: s.MaxItems}
 	for _, v := range s.Enum {
 		f.Enum = append(f.Enum, fmt.Sprint(v))
 	}
