@@ -21,8 +21,8 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	root := cli.New(version)
-	if strings.TrimSuffix(strings.ToLower(filepath.Base(os.Args[0])), ".exe") == "mh-preview" {
-		root.Use = "mh-preview"
+	if strings.TrimSuffix(strings.ToLower(filepath.Base(os.Args[0])), ".exe") == "mh-dev" {
+		root.Use = "mh-dev"
 	}
 	if err := root.ExecuteContext(ctx); err != nil {
 		format, _ := root.PersistentFlags().GetString("format")

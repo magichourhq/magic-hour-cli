@@ -20,8 +20,8 @@ def update(version: str, checksums_path: Path, manifest_path: Path) -> None:
 
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text())
-    elif manifest_path.stem == "mh-preview":
-        manifest = json.loads(Path(__file__).with_name("mh-preview.json.template").read_text())
+    elif manifest_path.stem == "mh-dev":
+        manifest = json.loads(Path(__file__).with_name("mh-dev.json.template").read_text())
     else:
         raise FileNotFoundError(manifest_path)
     manifest["version"] = version

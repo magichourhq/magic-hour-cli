@@ -1,0 +1,12 @@
+{
+  "version": "0.0.0",
+  "description": "Development builds of the Magic Hour command-line tool",
+  "homepage": "https://github.com/magichourhq/magic-hour-cli",
+  "license": "MIT",
+  "architecture": {
+    "64bit": {},
+    "arm64": {}
+  },
+  "pre_install": "Rename-Item (Join-Path $dir 'mh.exe') 'mh-dev.exe'",
+  "bin": "mh-dev.exe"
+}

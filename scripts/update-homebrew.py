@@ -19,7 +19,7 @@ def update(version: str, checksums_path: Path, formula_path: Path) -> None:
         checksums[name] = digest
 
     name = formula_path.stem
-    classes = {"mh": "Mh", "mh-preview": "MhPreview"}
+    classes = {"mh": "Mh", "mh-dev": "MhDev"}
     if name not in classes:
         raise ValueError(f"unsupported formula: {name}")
     values = {"VERSION": version, "FORMULA_CLASS": classes[name], "BIN_NAME": name}

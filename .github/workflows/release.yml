@@ -71,7 +71,7 @@ jobs:
       contents: read
     env:
       RELEASE_VERSION: ${{ needs.release.outputs.version }}
-      PACKAGE_NAME: ${{ contains(needs.release.outputs.version, '-') && 'mh-preview' || 'mh' }}
+      PACKAGE_NAME: ${{ contains(needs.release.outputs.version, '-') && 'mh-dev' || 'mh' }}
     steps:
       - name: Mint tap token
         id: tap-token
@@ -134,7 +134,7 @@ jobs:
       contents: read
     env:
       RELEASE_VERSION: ${{ needs.release.outputs.version }}
-      PACKAGE_NAME: ${{ contains(needs.release.outputs.version, '-') && 'mh-preview' || 'mh' }}
+      PACKAGE_NAME: ${{ contains(needs.release.outputs.version, '-') && 'mh-dev' || 'mh' }}
     steps:
       - name: Mint bucket token
         id: bucket-token
