@@ -14,7 +14,7 @@ download a release while signed in to GitHub.
 With [Homebrew](https://brew.sh) installed:
 
 ```sh
-brew install magichourhq/homebrew-tap/mh
+brew install magichourhq/tap/mh
 ```
 
 ### Windows: Scoop
