@@ -115,16 +115,19 @@ jobs:
           branch="chore/$PACKAGE_NAME-$RELEASE_VERSION"
           if [ "$(gh pr list --repo magichourhq/homebrew-tap --head "$branch" --state open --json number --jq length)" != 0 ]; then
             echo "Tap PR already open for v$RELEASE_VERSION"
-            exit 0
+          else
+            git switch -c "$branch"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add "Formula/$PACKAGE_NAME.rb"
+            git commit -m "chore: update $PACKAGE_NAME to v$RELEASE_VERSION"
+            git push origin "$branch"
+            printf 'Update %s formula to v%s using release checksums.\n' "$PACKAGE_NAME" "$RELEASE_VERSION" > "$RUNNER_TEMP/tap-pr.md"
+            gh pr create --repo magichourhq/homebrew-tap --base main --head "$branch" --title "chore: update $PACKAGE_NAME to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/tap-pr.md"
           fi
-          git switch -c "$branch"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "Formula/$PACKAGE_NAME.rb"
-          git commit -m "chore: update $PACKAGE_NAME to v$RELEASE_VERSION"
-          git push origin "$branch"
-          printf 'Update %s formula to v%s using release checksums.\n' "$PACKAGE_NAME" "$RELEASE_VERSION" > "$RUNNER_TEMP/tap-pr.md"
-          gh pr create --repo magichourhq/homebrew-tap --base main --head "$branch" --title "chore: update $PACKAGE_NAME to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/tap-pr.md"
+          if [ "$(gh pr view "$branch" --repo magichourhq/homebrew-tap --json autoMergeRequest --jq '.autoMergeRequest == null')" = true ]; then
+            gh pr merge "$branch" --repo magichourhq/homebrew-tap --auto --squash
+          fi
 
   update-scoop:
     needs: release
@@ -178,13 +181,16 @@ jobs:
           branch="chore/$PACKAGE_NAME-$RELEASE_VERSION"
           if [ "$(gh pr list --repo magichourhq/scoop-bucket --head "$branch" --state open --json number --jq length)" != 0 ]; then
             echo "Bucket PR already open for v$RELEASE_VERSION"
-            exit 0
+          else
+            git switch -c "$branch"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add "$PACKAGE_NAME.json"
+            git commit -m "chore: update $PACKAGE_NAME to v$RELEASE_VERSION"
+            git push origin "$branch"
+            printf 'Update %s Scoop manifest to v%s using release checksums.\n' "$PACKAGE_NAME" "$RELEASE_VERSION" > "$RUNNER_TEMP/scoop-pr.md"
+            gh pr create --repo magichourhq/scoop-bucket --base main --head "$branch" --title "chore: update $PACKAGE_NAME to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/scoop-pr.md"
           fi
-          git switch -c "$branch"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$PACKAGE_NAME.json"
-          git commit -m "chore: update $PACKAGE_NAME to v$RELEASE_VERSION"
-          git push origin "$branch"
-          printf 'Update %s Scoop manifest to v%s using release checksums.\n' "$PACKAGE_NAME" "$RELEASE_VERSION" > "$RUNNER_TEMP/scoop-pr.md"
-          gh pr create --repo magichourhq/scoop-bucket --base main --head "$branch" --title "chore: update $PACKAGE_NAME to v$RELEASE_VERSION" --body-file "$RUNNER_TEMP/scoop-pr.md"
+          if [ "$(gh pr view "$branch" --repo magichourhq/scoop-bucket --json autoMergeRequest --jq '.autoMergeRequest == null')" = true ]; then
+            gh pr merge "$branch" --repo magichourhq/scoop-bucket --auto --squash
+          fi
