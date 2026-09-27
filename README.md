@@ -56,16 +56,23 @@ Run `mh version` to confirm the install.
 
 ## Authenticate
 
-Set your [Magic Hour API key](https://magichour.ai/developer):
+Log in through your browser:
 
 ```sh
-export MAGIC_HOUR_API_KEY='your-key'
-mh auth status
+mh login
 ```
 
-To validate and save the key for future sessions, run `mh auth login`.
-`mh auth logout` removes the saved key; an environment key remains active.
-You can also pipe a key from a secret manager into `mh auth login --key-stdin`.
+Approve the request on Magic Hour. The CLI saves a new API key for future runs.
+If the browser does not open, follow the URL printed in your terminal.
+
+To paste an existing [API key](https://magichour.ai/developer) instead, run
+`mh login --interactive`. Input is hidden. For scripts and agents, set
+`MAGIC_HOUR_API_KEY`; it takes precedence over the saved key. You can also pipe
+a key from a secret manager into `mh login --key-stdin`.
+
+`mh whoami` checks the active key. `mh logout` removes the saved key;
+delete it in the Developer Hub to revoke it. An environment key remains active
+after logout.
 
 ## Generate and edit
 
