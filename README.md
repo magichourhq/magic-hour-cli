@@ -5,11 +5,6 @@ waits for the project to finish, and downloads the result.
 
 ## Install
 
-The CLI and package repositories are private during prerelease testing.
-Homebrew and Scoop installs will work once the repositories are public. Dev
-releases do not update those packages; use a manual install to try the latest
-dev version.
-
 ### Homebrew: macOS and Linux
 
 With [Homebrew](https://brew.sh) installed:
@@ -29,7 +24,7 @@ scoop install magic-hour/mh
 
 ### Manual install
 
-If you have repository access, download the current version from
+Download the current version from
 [Releases](https://github.com/magichourhq/magic-hour-cli/releases).
 
 #### Release archive: macOS, Linux, Windows
