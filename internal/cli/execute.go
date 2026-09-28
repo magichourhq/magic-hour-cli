@@ -3,8 +3,10 @@ package cli
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"sync"
 	"text/tabwriter"
 	"time"
 
@@ -34,24 +36,10 @@ func execute(cmd *cobra.Command, timeout time.Duration, fn func(context.Context,
 	}
 	ctx, cancel := context.WithTimeout(cmd.Context(), timeout)
 	defer cancel()
-	stderr := cmd.ErrOrStderr()
-	progress := func(message string) { fmt.Fprintln(stderr, message) }
-	clearProgress := func() {}
-	if file, ok := stderr.(*os.File); ok && term.IsTerminal(int(file.Fd())) && os.Getenv("TERM") != "" && os.Getenv("TERM") != "dumb" {
-		active := false
-		progress = func(message string) {
-			fmt.Fprintf(stderr, "\r\x1b[2K%s", message)
-			active = true
-		}
-		clearProgress = func() {
-			if active {
-				fmt.Fprint(stderr, "\r\x1b[2K")
-			}
-		}
-	}
+	progress, finishProgress := newProgress(cmd.ErrOrStderr())
 	runner := workflow.Runner{Client: api.New(key), Progress: progress}
 	result, err := fn(ctx, runner)
-	clearProgress()
+	finishProgress()
 	if result.ID != "" {
 		if err != nil {
 			result.Error = err.Error()
@@ -61,6 +49,62 @@ func execute(cmd *cobra.Command, timeout time.Duration, fn func(context.Context,
 		}
 	}
 	return err
+}
+
+func newProgress(w io.Writer) (func(string), func()) {
+	plain := func(message string) { fmt.Fprintln(w, message) }
+	file, ok := w.(*os.File)
+	if !ok || !term.IsTerminal(int(file.Fd())) || os.Getenv("TERM") == "" || os.Getenv("TERM") == "dumb" {
+		return plain, func() {}
+	}
+
+	frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+	var mu sync.Mutex
+	message := ""
+	started := time.Time{}
+	frame := 0
+	draw := func() {
+		fmt.Fprintf(w, "\r\x1b[2K%s %s (%ds)", frames[frame%len(frames)], message, int(time.Since(started).Seconds()))
+	}
+	progress := func(next string) {
+		mu.Lock()
+		defer mu.Unlock()
+		if message != "" {
+			fmt.Fprintf(w, "\r\x1b[2K%s\n", message)
+		}
+		message, started, frame = next, time.Now(), 0
+		draw()
+	}
+	stop := make(chan struct{})
+	stopped := make(chan struct{})
+	go func() {
+		defer close(stopped)
+		ticker := time.NewTicker(100 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				mu.Lock()
+				if message != "" {
+					frame++
+					draw()
+				}
+				mu.Unlock()
+			case <-stop:
+				return
+			}
+		}
+	}()
+	finish := func() {
+		close(stop)
+		<-stopped
+		mu.Lock()
+		defer mu.Unlock()
+		if message != "" {
+			fmt.Fprintf(w, "\r\x1b[2K%s\n", message)
+		}
+	}
+	return progress, finish
 }
 
 func printResult(cmd *cobra.Command, result workflow.Result) error {
