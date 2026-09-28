@@ -3,7 +3,11 @@ package cli
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"strings"
+	"sync"
 	"text/tabwriter"
 	"time"
 
@@ -11,6 +15,7 @@ import (
 	"github.com/magichourhq/magic-hour-cli/internal/config"
 	"github.com/magichourhq/magic-hour-cli/internal/workflow"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 func executionFlags(cmd *cobra.Command) (*workflow.Options, *time.Duration) {
@@ -32,8 +37,10 @@ func execute(cmd *cobra.Command, timeout time.Duration, fn func(context.Context,
 	}
 	ctx, cancel := context.WithTimeout(cmd.Context(), timeout)
 	defer cancel()
-	runner := workflow.Runner{Client: api.New(key), Progress: func(message string) { fmt.Fprintln(cmd.ErrOrStderr(), message) }}
+	progress, finishProgress := newProgress(cmd.ErrOrStderr(), progressTitle(cmd))
+	runner := workflow.Runner{Client: api.New(key), Progress: progress}
 	result, err := fn(ctx, runner)
+	finishProgress(err)
 	if result.ID != "" {
 		if err != nil {
 			result.Error = err.Error()
@@ -43,6 +50,115 @@ func execute(cmd *cobra.Command, timeout time.Duration, fn func(context.Context,
 		}
 	}
 	return err
+}
+
+func progressTitle(cmd *cobra.Command) string {
+	if cmd.Parent() == nil {
+		return "Project"
+	}
+	kind := cmd.Parent().Name()
+	kind = strings.ToUpper(kind[:1]) + kind[1:]
+	switch cmd.Name() {
+	case "generate":
+		return kind + " generation"
+	case "edit":
+		return kind + " edit"
+	default:
+		return kind + " project"
+	}
+}
+
+func newProgress(w io.Writer, title string) (func(string, string), func(error)) {
+	plain := func(message, _ string) { fmt.Fprintln(w, message) }
+	file, ok := w.(*os.File)
+	if !ok || !term.IsTerminal(int(file.Fd())) || os.Getenv("TERM") == "" || os.Getenv("TERM") == "dumb" {
+		return plain, func(error) {}
+	}
+
+	frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+	var mu sync.Mutex
+	message := ""
+	shown := false
+	started := time.Time{}
+	frame := 0
+	draw := func() {
+		fmt.Fprintf(w, "\r\x1b[2K  %s %s · %s", frames[frame%len(frames)], message, time.Since(started).Truncate(time.Second))
+	}
+	complete := func(mark string) {
+		if message == "" {
+			return
+		}
+		label := message
+		if mark == "✓" {
+			if strings.HasPrefix(label, "Downloading ") {
+				label = "Downloaded " + strings.TrimPrefix(label, "Downloading ")
+			} else if strings.HasPrefix(label, "Uploading ") {
+				label = "Uploaded " + strings.TrimPrefix(label, "Uploading ")
+			}
+		}
+		fmt.Fprintf(w, "\r\x1b[2K  %s %s · %s\n", mark, label, time.Since(started).Truncate(time.Second))
+	}
+	progress := func(_, next string) {
+		mu.Lock()
+		defer mu.Unlock()
+		if !shown {
+			fmt.Fprintln(w, title)
+			shown = true
+		}
+		if strings.HasPrefix(message, "Creating ") && strings.HasPrefix(next, "Created ") {
+			fmt.Fprintf(w, "\r\x1b[2K  ✓ %s\n", next)
+			message = ""
+			return
+		}
+		if message != "" {
+			mark := "✓"
+			if strings.HasPrefix(message, "Poll failed") {
+				mark = "!"
+			}
+			complete(mark)
+		}
+		message, started, frame = next, time.Now(), 0
+		draw()
+	}
+	stop := make(chan struct{})
+	stopped := make(chan struct{})
+	go func() {
+		defer close(stopped)
+		ticker := time.NewTicker(100 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				mu.Lock()
+				if message != "" {
+					frame++
+					draw()
+				}
+				mu.Unlock()
+			case <-stop:
+				return
+			}
+		}
+	}()
+	finish := func(err error) {
+		close(stop)
+		<-stopped
+		mu.Lock()
+		defer mu.Unlock()
+		if message != "" {
+			mark := "✓"
+			if err != nil {
+				mark = "✗"
+			} else if strings.HasPrefix(message, "Poll failed") {
+				mark = "!"
+			}
+			complete(mark)
+		}
+		if shown {
+			fmt.Fprintln(w)
+		}
+	}
+	return progress, finish
 }
 
 func printResult(cmd *cobra.Command, result workflow.Result) error {
