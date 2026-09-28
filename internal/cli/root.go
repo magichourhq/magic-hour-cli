@@ -12,7 +12,7 @@ import (
 )
 
 func New(version string) *cobra.Command {
-	root := &cobra.Command{Use: "mh", Short: "Generate and edit images with Magic Hour; create videos", Version: version, SilenceUsage: true, SilenceErrors: true}
+	root := &cobra.Command{Use: "mh", Short: "Generate and edit images with Magic Hour; create video and audio", Version: version, SilenceUsage: true, SilenceErrors: true}
 	root.CompletionOptions.HiddenDefaultCmd = true
 	var format string
 	root.PersistentFlags().StringVar(&format, "format", "text", "Result format: text or json")
@@ -157,7 +157,7 @@ func choices(values []string) func(*cobra.Command, []string, string) ([]string, 
 	return func(_ *cobra.Command, _ []string, prefix string) ([]string, cobra.ShellCompDirective) {
 		var matches []string
 		for _, value := range values {
-			if strings.HasPrefix(value, prefix) {
+			if strings.HasPrefix(strings.ToLower(value), strings.ToLower(prefix)) {
 				matches = append(matches, value)
 			}
 		}

@@ -48,5 +48,27 @@
       "assets.image_file_path": {"flag": "image", "file_kind": "image", "help": "Starting image path or URL; selects image-to-video. Use - for piped mh JSON."},
       "assets.end_image_file_path": {"flag": "end-image", "file_kind": "image", "help": "Optional last-frame image path or URL."}
     }
+  },
+  {
+    "id": "aiVoiceGenerator.createAudio",
+    "group": "audio",
+    "name": "generate",
+    "kind": "audio",
+    "example": "mh audio generate --prompt 'Hello from Magic Hour' --voice 'Morgan Freeman'",
+    "overrides": {
+      "style.prompt": {"flag": "prompt", "help": "Text to speak (up to 1000 characters)."},
+      "style.voice_name": {"flag": "voice", "help": "Voice name; press Tab to complete available voices."}
+    }
+  },
+  {
+    "id": "aiVoiceCloner.createAudio",
+    "group": "audio",
+    "name": "clone",
+    "kind": "audio",
+    "example": "mh audio clone --sample voice.mp3 --prompt 'Hello in my voice'",
+    "overrides": {
+      "assets.audio_file_path": {"flag": "sample", "file_kind": "audio", "help": "Voice sample path or URL. Use - for piped mh JSON."},
+      "style.prompt": {"flag": "prompt", "help": "Text to speak (up to 1000 characters)."}
+    }
   }
 ]
