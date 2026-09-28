@@ -7,6 +7,7 @@ type Operation struct {
 	ID      string  `json:"id"`
 	Group   string  `json:"group"`
 	Name    string  `json:"name"`
+	Variant string  `json:"variant,omitempty"`
 	Kind    string  `json:"kind"`
 	Path    string  `json:"path"`
 	Summary string  `json:"summary"`

@@ -12,7 +12,7 @@ import (
 )
 
 func New(version string) *cobra.Command {
-	root := &cobra.Command{Use: "mh", Short: "Generate and edit images with Magic Hour", Version: version, SilenceUsage: true, SilenceErrors: true}
+	root := &cobra.Command{Use: "mh", Short: "Generate and edit images with Magic Hour; create videos", Version: version, SilenceUsage: true, SilenceErrors: true}
 	root.CompletionOptions.HiddenDefaultCmd = true
 	var format string
 	root.PersistentFlags().StringVar(&format, "format", "text", "Result format: text or json")
@@ -25,6 +25,7 @@ func New(version string) *cobra.Command {
 	root.RegisterFlagCompletionFunc("format", choices([]string{"text", "json"}))
 	addAuth(root)
 	groups := map[string]*cobra.Command{}
+	video := map[string]catalog.Operation{}
 	for _, op := range catalog.Operations {
 		group := groups[op.Group]
 		if group == nil {
@@ -33,7 +34,14 @@ func New(version string) *cobra.Command {
 			root.AddCommand(group)
 			addManagement(group, op.Kind)
 		}
+		if op.Group == "video" && op.Name == "generate" {
+			video[op.Variant] = op
+			continue
+		}
 		group.AddCommand(operationCommand(op))
+	}
+	if len(video) == 2 {
+		groups["video"].AddCommand(videoGenerateCommand(video["text"], video["image"]))
 	}
 	root.AddCommand(&cobra.Command{Use: "schema [group command]", Short: "Print generated command definitions as JSON", Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 0 && len(args) != 2 {
@@ -44,10 +52,17 @@ func New(version string) *cobra.Command {
 		if len(args) == 0 {
 			return writeJSON(cmd, catalog.Operations)
 		}
+		var matches []catalog.Operation
 		for _, op := range catalog.Operations {
 			if op.Group == args[0] && op.Name == args[1] {
-				return writeJSON(cmd, op)
+				matches = append(matches, op)
 			}
+		}
+		if len(matches) == 1 {
+			return writeJSON(cmd, matches[0])
+		}
+		if len(matches) > 1 {
+			return writeJSON(cmd, matches)
 		}
 		return fmt.Errorf("unknown command %s", strings.Join(args, " "))
 	}})
@@ -60,14 +75,21 @@ func New(version string) *cobra.Command {
 
 func operationCommand(op catalog.Operation) *cobra.Command {
 	cmd := &cobra.Command{Use: op.Name, Short: op.Summary, Example: op.Example, Args: cobra.NoArgs}
+	configureOperation(cmd, op.Fields, func(*cobra.Command) catalog.Operation { return op })
+	return cmd
+}
+
+func configureOperation(cmd *cobra.Command, fields []catalog.Field, selectOperation func(*cobra.Command) catalog.Operation) {
 	opts, timeout := executionFlags(cmd)
+	schemaOp := selectOperation(cmd)
+	schemaPath := schemaOp.Group + " " + schemaOp.Name
 	var dryRun bool
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Validate flags and print the request without API calls; local files are not checked")
-	for _, f := range op.Fields {
+	for _, f := range fields {
 		help := strings.ReplaceAll(strings.SplitN(f.Help, "\n", 2)[0], "`", "'")
 		if strings.Contains(f.Help, "\n") {
 			help = strings.TrimSuffix(help, ".")
-			help += fmt.Sprintf("; details: mh schema %s %s", op.Group, op.Name)
+			help += "; details: mh schema " + schemaPath
 		}
 		if len(f.Enum) > 0 {
 			help = strings.TrimSuffix(help, ".")
@@ -79,7 +101,7 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 			if len(f.Enum) <= 10 {
 				help += "; choices: " + strings.Join(f.Enum, ", ")
 			} else {
-				help += fmt.Sprintf("; %d choices (use completion or mh schema %s %s)", len(f.Enum), op.Group, op.Name)
+				help += fmt.Sprintf("; %d choices (use completion or mh schema %s)", len(f.Enum), schemaPath)
 			}
 		}
 		if f.Type == "array" {
@@ -94,13 +116,14 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 		}
 	}
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		op := selectOperation(cmd)
 		if *timeout <= 0 {
 			return fmt.Errorf("--timeout must be positive")
 		}
 		readCtx, cancel := context.WithTimeout(cmd.Context(), *timeout)
 		defer cancel()
 		values := map[string][]string{}
-		for _, f := range op.Fields {
+		for _, f := range fields {
 			if !cmd.Flags().Changed(f.Flag) {
 				continue
 			}
@@ -128,7 +151,6 @@ func operationCommand(op catalog.Operation) *cobra.Command {
 			return runner.Generate(ctx, op, values, *opts)
 		})
 	}
-	return cmd
 }
 
 func choices(values []string) func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {

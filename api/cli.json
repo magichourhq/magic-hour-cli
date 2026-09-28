@@ -21,5 +21,32 @@
       "image_count": {"flag": "count", "default": "1"},
       "assets.image_file_paths": {"flag": "image", "file_kind": "image", "required": true, "min_items": 1, "help": "Image path or URL; repeat for multiple images. Use - for piped mh JSON."}
     }
+  },
+  {
+    "id": "textToVideo.createVideo",
+    "group": "video",
+    "name": "generate",
+    "variant": "text",
+    "kind": "video",
+    "example": "mh video generate --prompt 'A corgi running through a field'",
+    "omit": ["references"],
+    "overrides": {
+      "end_seconds": {"flag": "duration", "default": "5", "help": "Video length in seconds; supported values vary by model."},
+      "style.prompt": {"flag": "prompt"}
+    }
+  },
+  {
+    "id": "imageToVideo.createVideo",
+    "group": "video",
+    "name": "generate",
+    "variant": "image",
+    "kind": "video",
+    "example": "mh video generate --image photo.png --prompt 'Gentle camera movement'",
+    "overrides": {
+      "end_seconds": {"flag": "duration", "default": "5", "help": "Video length in seconds; supported values vary by model."},
+      "style.prompt": {"flag": "prompt"},
+      "assets.image_file_path": {"flag": "image", "file_kind": "image", "help": "Starting image path or URL; selects image-to-video. Use - for piped mh JSON."},
+      "assets.end_image_file_path": {"flag": "end-image", "file_kind": "image", "help": "Optional last-frame image path or URL."}
+    }
   }
 ]
