@@ -145,6 +145,7 @@ func choices(values []string) func(*cobra.Command, []string, string) ([]string, 
 
 func writeJSON(cmd *cobra.Command, value any) error {
 	enc := json.NewEncoder(cmd.OutOrStdout())
+	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "  ")
 	return enc.Encode(value)
 }

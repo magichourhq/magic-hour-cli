@@ -22,13 +22,12 @@ type Output struct {
 }
 
 type Result struct {
-	ID             string          `json:"id"`
-	Type           string          `json:"type"`
-	Status         string          `json:"status"`
-	CreditsCharged *int            `json:"credits_charged"`
-	Outputs        []Output        `json:"outputs"`
-	Project        json.RawMessage `json:"project,omitempty"`
-	Error          string          `json:"error,omitempty"`
+	ID             string   `json:"id"`
+	Type           string   `json:"type"`
+	Status         string   `json:"status"`
+	CreditsCharged *int     `json:"credits_charged"`
+	Outputs        []Output `json:"outputs"`
+	Error          string   `json:"error,omitempty"`
 }
 
 type Options struct {
@@ -118,10 +117,11 @@ func (r Runner) Get(ctx context.Context, kind, id string) (Result, error) {
 			Message string `json:"message"`
 		} `json:"error"`
 	}
-	if err := r.Client.Do(ctx, http.MethodGet, path, nil, &result.Project); err != nil {
+	var project json.RawMessage
+	if err := r.Client.Do(ctx, http.MethodGet, path, nil, &project); err != nil {
 		return result, err
 	}
-	if err := json.Unmarshal(result.Project, &response); err != nil {
+	if err := json.Unmarshal(project, &response); err != nil {
 		return result, err
 	}
 	result.Status = response.Status
