@@ -33,7 +33,10 @@ type Result struct {
 type Options struct {
 	NoWait, NoDownload bool
 	Output             string
+	OutputExt          string
 }
+
+const AudioOutputExtension = ".wav"
 
 type Runner struct {
 	Client *api.Client
@@ -53,6 +56,9 @@ func (r Runner) noteLabel(message, label string) {
 
 func (r Runner) Generate(ctx context.Context, op catalog.Operation, values map[string][]string, opts Options) (Result, error) {
 	result := Result{Type: op.Kind, Outputs: []Output{}}
+	if op.Kind == "audio" {
+		opts.OutputExt = AudioOutputExtension
+	}
 	body, err := op.Body(values)
 	if err != nil {
 		return result, err

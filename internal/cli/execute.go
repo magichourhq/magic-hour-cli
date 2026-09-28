@@ -167,9 +167,7 @@ func printResult(cmd *cobra.Command, result workflow.Result) error {
 		return writeJSON(cmd, result)
 	}
 	w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
-	if result.Error != "" {
-		fmt.Fprintf(w, "Error:\t%s\n", result.Error)
-	} else {
+	if result.Error == "" {
 		for _, output := range result.Outputs {
 			if output.Path != "" {
 				fmt.Fprintf(w, "File:\t%s\n", output.Path)

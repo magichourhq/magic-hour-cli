@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 func ValidateOptions(opts Options, body map[string]any) error {
@@ -28,6 +29,11 @@ func ValidateOptions(opts Options, body map[string]any) error {
 	if !os.IsNotExist(err) {
 		return err
 	}
+	if opts.OutputExt != "" {
+		if err := checkOutputExtension(opts.Output, opts.OutputExt); err != nil {
+			return err
+		}
+	}
 	if count, ok := body["image_count"].(float64); ok && count > 1 {
 		return fmt.Errorf("--output must be an existing directory when --count exceeds one")
 	}
@@ -40,6 +46,13 @@ func ValidateOptions(opts Options, body map[string]any) error {
 
 var safeID = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 var safeExtension = regexp.MustCompile(`^\.[A-Za-z0-9]{1,8}$`)
+
+func checkOutputExtension(file, expected string) error {
+	if !strings.EqualFold(filepath.Ext(file), expected) {
+		return fmt.Errorf("--output must end in %s for this file: %s", expected, file)
+	}
+	return nil
+}
 
 func (r Runner) Download(ctx context.Context, result Result, output string) (Result, error) {
 	if result.Status != "complete" {
@@ -60,16 +73,20 @@ func (r Runner) Download(ctx context.Context, result Result, output string) (Res
 	}
 	for i := range result.Outputs {
 		file := output
+		u, err := url.Parse(result.Outputs[i].URL)
+		if err != nil {
+			return result, fmt.Errorf("invalid output URL")
+		}
+		ext := path.Ext(u.Path)
 		if file == "" {
-			u, err := url.Parse(result.Outputs[i].URL)
-			if err != nil {
-				return result, fmt.Errorf("invalid output URL")
-			}
-			ext := path.Ext(u.Path)
 			if !safeExtension.MatchString(ext) {
 				ext = ".bin"
 			}
 			file = filepath.Join(dir, fmt.Sprintf("mh-%s-%d%s", result.ID, i+1, ext))
+		} else if result.Type == "audio" && safeExtension.MatchString(ext) {
+			if err := checkOutputExtension(file, ext); err != nil {
+				return result, err
+			}
 		}
 		f, err := os.OpenFile(file, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 		if err != nil {

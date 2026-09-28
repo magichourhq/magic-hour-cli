@@ -109,8 +109,8 @@ mh audio clone --sample voice.mp3 --prompt 'Hello in my voice'
 `generate` speaks text with a named voice. Complete `--voice` with Tab; names
 must match an available voice. `clone` speaks text using a sample audio file or
 URL. Local samples upload automatically. Both commands download the finished
-audio by default. These endpoints currently return WAV files; use `.wav` for a
-custom `--output` filename.
+audio by default. These endpoints currently return WAV files; custom `--output`
+filenames must end in `.wav`.
 
 Commands wait and download by default. `--no-wait` returns the project ID
 immediately; `--no-download` waits and returns output URLs. Text output shows

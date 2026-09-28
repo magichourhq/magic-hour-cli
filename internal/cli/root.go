@@ -117,6 +117,9 @@ func configureOperation(cmd *cobra.Command, fields []catalog.Field, selectOperat
 	}
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		op := selectOperation(cmd)
+		if op.Kind == "audio" {
+			opts.OutputExt = workflow.AudioOutputExtension
+		}
 		if *timeout <= 0 {
 			return fmt.Errorf("--timeout must be positive")
 		}
