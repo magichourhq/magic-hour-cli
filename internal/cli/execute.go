@@ -38,7 +38,7 @@ func execute(cmd *cobra.Command, timeout time.Duration, fn func(context.Context,
 	ctx, cancel := context.WithTimeout(cmd.Context(), timeout)
 	defer cancel()
 	progress, finishProgress := newProgress(cmd.ErrOrStderr(), progressTitle(cmd))
-	runner := workflow.Runner{Client: api.New(key), Progress: progress}
+	runner := workflow.Runner{Client: api.New(key, cmd.Root().Version), Progress: progress}
 	result, err := fn(ctx, runner)
 	finishProgress(err)
 	if result.ID != "" {
