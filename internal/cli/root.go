@@ -13,6 +13,7 @@ import (
 
 func New(version string) *cobra.Command {
 	root := &cobra.Command{Use: "mh", Short: "Generate and edit images with Magic Hour", Version: version, SilenceUsage: true, SilenceErrors: true}
+	root.CompletionOptions.HiddenDefaultCmd = true
 	var format string
 	root.PersistentFlags().StringVar(&format, "format", "text", "Result format: text or json")
 	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
