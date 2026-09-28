@@ -86,7 +86,8 @@ an existing directory. The CLI never overwrites output files.
 
 Commands wait and download by default. `--no-wait` returns the project ID
 immediately; `--no-download` waits and returns output URLs. Text output shows
-the project ID, status, output paths or URLs, and credits charged when available.
+files or URLs first, then credits charged and the project ID. It shows status
+when no completed output is available.
 `--format json` returns structured fields for scripts. `--dry-run` prints the
 request without calling the API or checking local input files.
 
