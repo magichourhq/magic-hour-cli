@@ -1,6 +1,6 @@
 # Magic Hour CLI
 
-Generate and edit images from your terminal with `mh`. It uploads local inputs,
+Generate images and videos from your terminal with `mh`. It uploads local inputs,
 waits for the project to finish, and downloads the result.
 
 ## Install
@@ -72,7 +72,7 @@ key from a secret manager into `mh login --key-stdin`.
 key, but does not revoke it. Revoke it in the Developer Hub if needed. An
 environment key stays active after logout.
 
-## Generate and edit
+## Generate and edit images
 
 ```sh
 mh image generate --prompt 'A mountain landscape at sunrise' --output landscape.png
@@ -84,6 +84,20 @@ mh image edit --image landscape.png --prompt 'Make it sunset' --output sunset.pn
 For multiple images, use `--count`. If you also set `--output`, it must point to
 an existing directory. The CLI never overwrites output files.
 
+## Generate video
+
+```sh
+mh video generate --prompt 'A corgi running through a field'
+mh video generate --image photo.png --prompt 'Gentle camera movement' --duration 5
+```
+
+Without `--image`, `mh` generates video from text and requires `--prompt`.
+With `--image`, it animates the image; `--prompt` is optional. Both modes default
+to 5 seconds. Supported durations vary by model. Use `--end-image` for an optional
+last frame. Model completion uses the image-to-video list when `--image` is set,
+or shows both lists before a mode is chosen. The API chooses a model and
+resolution if you omit them.
+
 Commands wait and download by default. `--no-wait` returns the project ID
 immediately; `--no-download` waits and returns output URLs. Text output shows
 files or URLs first, then credits charged and the project ID. It shows status
@@ -91,7 +105,7 @@ when no completed output is available.
 `--format json` returns structured fields for scripts. `--dry-run` prints the
 request without calling the API or checking local input files.
 
-## Manage image projects
+## Manage projects
 
 ```sh
 mh image generate --prompt 'A mountain landscape' --no-wait --format json
@@ -99,6 +113,10 @@ mh image wait PROJECT_ID
 mh image download PROJECT_ID --output landscape.png
 mh image get PROJECT_ID --format json
 mh image delete PROJECT_ID
+mh video get PROJECT_ID
+mh video wait PROJECT_ID
+mh video download PROJECT_ID
+mh video delete PROJECT_ID
 ```
 
 `wait` checks for completion but does not download. `download` requires a
@@ -110,7 +128,7 @@ command time limit.
 ```sh
 set -o pipefail
 mh image generate --prompt 'A mountain landscape' --no-download --format json |
-  mh image edit --image - --prompt 'Make it sunset' --output sunset.png
+  mh video generate --image - --prompt 'Slowly pan across the landscape'
 ```
 
 `--image -` reads one completed `mh --format json` result from stdin. JSON goes
@@ -123,7 +141,9 @@ flag.
 ```sh
 mh --help
 mh image generate --help
+mh video generate --help
 mh schema image edit
+mh schema video generate
 mh completion zsh
 ```
 
