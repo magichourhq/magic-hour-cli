@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"text/tabwriter"
 	"time"
@@ -36,10 +37,10 @@ func execute(cmd *cobra.Command, timeout time.Duration, fn func(context.Context,
 	}
 	ctx, cancel := context.WithTimeout(cmd.Context(), timeout)
 	defer cancel()
-	progress, finishProgress := newProgress(cmd.ErrOrStderr())
+	progress, finishProgress := newProgress(cmd.ErrOrStderr(), progressTitle(cmd))
 	runner := workflow.Runner{Client: api.New(key), Progress: progress}
 	result, err := fn(ctx, runner)
-	finishProgress()
+	finishProgress(err)
 	if result.ID != "" {
 		if err != nil {
 			result.Error = err.Error()
@@ -51,26 +52,70 @@ func execute(cmd *cobra.Command, timeout time.Duration, fn func(context.Context,
 	return err
 }
 
-func newProgress(w io.Writer) (func(string), func()) {
-	plain := func(message string) { fmt.Fprintln(w, message) }
+func progressTitle(cmd *cobra.Command) string {
+	if cmd.Parent() == nil {
+		return "Project"
+	}
+	kind := cmd.Parent().Name()
+	kind = strings.ToUpper(kind[:1]) + kind[1:]
+	switch cmd.Name() {
+	case "generate":
+		return kind + " generation"
+	case "edit":
+		return kind + " edit"
+	default:
+		return kind + " project"
+	}
+}
+
+func newProgress(w io.Writer, title string) (func(string, string), func(error)) {
+	plain := func(message, _ string) { fmt.Fprintln(w, message) }
 	file, ok := w.(*os.File)
 	if !ok || !term.IsTerminal(int(file.Fd())) || os.Getenv("TERM") == "" || os.Getenv("TERM") == "dumb" {
-		return plain, func() {}
+		return plain, func(error) {}
 	}
 
 	frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 	var mu sync.Mutex
 	message := ""
+	shown := false
 	started := time.Time{}
 	frame := 0
 	draw := func() {
-		fmt.Fprintf(w, "\r\x1b[2K%s %s (%ds)", frames[frame%len(frames)], message, int(time.Since(started).Seconds()))
+		fmt.Fprintf(w, "\r\x1b[2K  %s %s · %s", frames[frame%len(frames)], message, time.Since(started).Truncate(time.Second))
 	}
-	progress := func(next string) {
+	complete := func(mark string) {
+		if message == "" {
+			return
+		}
+		label := message
+		if mark == "✓" {
+			if strings.HasPrefix(label, "Downloading ") {
+				label = "Downloaded " + strings.TrimPrefix(label, "Downloading ")
+			} else if strings.HasPrefix(label, "Uploading ") {
+				label = "Uploaded " + strings.TrimPrefix(label, "Uploading ")
+			}
+		}
+		fmt.Fprintf(w, "\r\x1b[2K  %s %s · %s\n", mark, label, time.Since(started).Truncate(time.Second))
+	}
+	progress := func(_, next string) {
 		mu.Lock()
 		defer mu.Unlock()
+		if !shown {
+			fmt.Fprintln(w, title)
+			shown = true
+		}
+		if strings.HasPrefix(message, "Creating ") && strings.HasPrefix(next, "Created ") {
+			fmt.Fprintf(w, "\r\x1b[2K  ✓ %s\n", next)
+			message = ""
+			return
+		}
 		if message != "" {
-			fmt.Fprintf(w, "\r\x1b[2K%s\n", message)
+			mark := "✓"
+			if strings.HasPrefix(message, "Poll failed") {
+				mark = "!"
+			}
+			complete(mark)
 		}
 		message, started, frame = next, time.Now(), 0
 		draw()
@@ -95,13 +140,22 @@ func newProgress(w io.Writer) (func(string), func()) {
 			}
 		}
 	}()
-	finish := func() {
+	finish := func(err error) {
 		close(stop)
 		<-stopped
 		mu.Lock()
 		defer mu.Unlock()
 		if message != "" {
-			fmt.Fprintf(w, "\r\x1b[2K%s\n", message)
+			mark := "✓"
+			if err != nil {
+				mark = "✗"
+			} else if strings.HasPrefix(message, "Poll failed") {
+				mark = "!"
+			}
+			complete(mark)
+		}
+		if shown {
+			fmt.Fprintln(w)
 		}
 	}
 	return progress, finish

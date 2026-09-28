@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/magichourhq/magic-hour-cli/internal/api"
@@ -38,12 +39,16 @@ type Options struct {
 type Runner struct {
 	Client *api.Client
 	// Progress is optional; recipes can call the runner without terminal output.
-	Progress func(string)
+	Progress func(message, label string)
 }
 
 func (r Runner) note(s string) {
+	r.noteLabel(s, s)
+}
+
+func (r Runner) noteLabel(message, label string) {
 	if r.Progress != nil {
-		r.Progress(s)
+		r.Progress(message, label)
 	}
 }
 
@@ -83,7 +88,7 @@ func (r Runner) Generate(ctx context.Context, op catalog.Operation, values map[s
 	if err != nil {
 		return result, err
 	}
-	r.note("Creating " + op.Kind + " project…")
+	r.noteLabel("Creating "+op.Kind+" project…", "Creating project…")
 	if err := r.Client.Do(ctx, http.MethodPost, op.Path, body, &result); err != nil {
 		return result, fmt.Errorf("create project: %w; request was not retried", err)
 	}
@@ -91,7 +96,7 @@ func (r Runner) Generate(ctx context.Context, op catalog.Operation, values map[s
 		return result, fmt.Errorf("create response did not include a project ID; request was not retried")
 	}
 	result.Status = "queued"
-	r.note("Created " + op.Kind + " project " + result.ID)
+	r.noteLabel("Created "+op.Kind+" project "+result.ID, "Created project "+result.ID)
 	if opts.NoWait {
 		return result, nil
 	}
@@ -156,7 +161,11 @@ func (r Runner) Finish(ctx context.Context, kind, id string, opts Options) (Resu
 		} else {
 			failedPolls = 0
 			if result.Status != lastStatus {
-				r.note(id + ": " + result.Status)
+				status := result.Status
+				if status != "" {
+					status = strings.ToUpper(status[:1]) + status[1:]
+				}
+				r.noteLabel(id+": "+result.Status, status)
 				lastStatus = result.Status
 			}
 			switch result.Status {
