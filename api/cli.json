@@ -28,10 +28,11 @@
     "name": "generate",
     "variant": "text",
     "kind": "video",
-    "example": "mh video generate --prompt 'A corgi running through a field'",
+    "example": "mh video generate --prompt 'A corgi running through a field' --aspect-ratio 16:9",
     "omit": ["references"],
     "overrides": {
       "end_seconds": {"flag": "duration", "default": "5", "help": "Video length in seconds; supported values vary by model."},
+      "aspect_ratio": {"default": "16:9", "help": "Text-to-video only; omit when using --image."},
       "style.prompt": {"flag": "prompt"}
     }
   },

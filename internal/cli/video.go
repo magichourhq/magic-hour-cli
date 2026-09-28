@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 
@@ -13,7 +14,7 @@ func videoGenerateCommand(textOp, imageOp catalog.Operation) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate video from text or an image",
-		Example: "mh video generate --prompt 'A corgi running through a field'\n" +
+		Example: "mh video generate --prompt 'A corgi running through a field' --aspect-ratio 16:9\n" +
 			"mh video generate --image photo.png --prompt 'Gentle camera movement'",
 		Args: cobra.NoArgs,
 	}
@@ -41,6 +42,16 @@ func videoGenerateCommand(textOp, imageOp catalog.Operation) *cobra.Command {
 		}
 		return textOp
 	})
+	run := cmd.RunE
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		if cmd.Flags().Changed("image") && cmd.Flags().Changed("aspect-ratio") {
+			return fmt.Errorf("--aspect-ratio is text-to-video only; omit it when using --image")
+		}
+		if !cmd.Flags().Changed("image") && cmd.Flags().Changed("end-image") {
+			return fmt.Errorf("--end-image requires --image")
+		}
+		return run(cmd, args)
+	}
 	cmd.RegisterFlagCompletionFunc("model", func(cmd *cobra.Command, _ []string, prefix string) ([]string, cobra.ShellCompDirective) {
 		textModels, imageModels := fieldChoices(textOp, "model"), fieldChoices(imageOp, "model")
 		if cmd.Flags().Changed("image") {

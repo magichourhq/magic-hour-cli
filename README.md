@@ -87,16 +87,17 @@ an existing directory. The CLI never overwrites output files.
 ## Generate video
 
 ```sh
-mh video generate --prompt 'A corgi running through a field'
+mh video generate --prompt 'A corgi running through a field' --aspect-ratio 16:9
 mh video generate --image photo.png --prompt 'Gentle camera movement' --duration 5
 ```
 
-Without `--image`, `mh` generates video from text and requires `--prompt`.
+Without `--image`, `mh` generates video from text, requires `--prompt`, and
+defaults to a 16:9 aspect ratio. `--aspect-ratio` only applies to text-to-video.
 With `--image`, it animates the image; `--prompt` is optional. Both modes default
-to 5 seconds. Supported durations vary by model. Use `--end-image` for an optional
-last frame. Model completion uses the image-to-video list when `--image` is set,
-or shows both lists before a mode is chosen. The API chooses a model and
-resolution if you omit them.
+to 5 seconds. Supported durations vary by model. Use `--end-image` with `--image`
+for an optional last frame. Model completion uses the image-to-video list when
+`--image` is set, or both lists before a mode is chosen. The API chooses a model
+and resolution if you omit them.
 
 ## Generate speech
 
