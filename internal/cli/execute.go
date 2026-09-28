@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"text/tabwriter"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/magichourhq/magic-hour-cli/internal/config"
 	"github.com/magichourhq/magic-hour-cli/internal/workflow"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 func executionFlags(cmd *cobra.Command) (*workflow.Options, *time.Duration) {
@@ -32,8 +34,24 @@ func execute(cmd *cobra.Command, timeout time.Duration, fn func(context.Context,
 	}
 	ctx, cancel := context.WithTimeout(cmd.Context(), timeout)
 	defer cancel()
-	runner := workflow.Runner{Client: api.New(key), Progress: func(message string) { fmt.Fprintln(cmd.ErrOrStderr(), message) }}
+	stderr := cmd.ErrOrStderr()
+	progress := func(message string) { fmt.Fprintln(stderr, message) }
+	clearProgress := func() {}
+	if file, ok := stderr.(*os.File); ok && term.IsTerminal(int(file.Fd())) && os.Getenv("TERM") != "" && os.Getenv("TERM") != "dumb" {
+		active := false
+		progress = func(message string) {
+			fmt.Fprintf(stderr, "\r\x1b[2K%s", message)
+			active = true
+		}
+		clearProgress = func() {
+			if active {
+				fmt.Fprint(stderr, "\r\x1b[2K")
+			}
+		}
+	}
+	runner := workflow.Runner{Client: api.New(key), Progress: progress}
 	result, err := fn(ctx, runner)
+	clearProgress()
 	if result.ID != "" {
 		if err != nil {
 			result.Error = err.Error()
