@@ -50,6 +50,12 @@ func videoGenerateCommand(textOp, imageOp catalog.Operation) *cobra.Command {
 		if !cmd.Flags().Changed("image") && cmd.Flags().Changed("end-image") {
 			return fmt.Errorf("--end-image requires --image")
 		}
+		model, _ := cmd.Flags().GetString("model")
+		if !cmd.Flags().Changed("duration") && strings.HasPrefix(strings.ToLower(model), "veo3.1") {
+			if err := cmd.Flags().Set("duration", "4"); err != nil {
+				return err
+			}
+		}
 		return run(cmd, args)
 	}
 	cmd.RegisterFlagCompletionFunc("model", func(cmd *cobra.Command, _ []string, prefix string) ([]string, cobra.ShellCompDirective) {

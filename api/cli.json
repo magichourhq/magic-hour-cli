@@ -31,7 +31,7 @@
     "example": "mh video generate --prompt 'A corgi running through a field' --aspect-ratio 16:9",
     "omit": ["references"],
     "overrides": {
-      "end_seconds": {"flag": "duration", "default": "5", "help": "Video length in seconds; supported values vary by model."},
+      "end_seconds": {"flag": "duration", "default": "5", "help": "Video length in seconds; defaults to 5, or 4 for Veo 3.1 models; supported values vary by model."},
       "aspect_ratio": {"default": "16:9", "help": "Text-to-video only; omit when using --image."},
       "style.prompt": {"flag": "prompt"}
     }
@@ -44,7 +44,7 @@
     "kind": "video",
     "example": "mh video generate --image photo.png --prompt 'Gentle camera movement'",
     "overrides": {
-      "end_seconds": {"flag": "duration", "default": "5", "help": "Video length in seconds; supported values vary by model."},
+      "end_seconds": {"flag": "duration", "default": "5", "help": "Video length in seconds; defaults to 5, or 4 for Veo 3.1 models; supported values vary by model."},
       "style.prompt": {"flag": "prompt"},
       "assets.image_file_path": {"flag": "image", "file_kind": "image", "help": "Starting image path or URL; selects image-to-video. Use - for piped mh JSON."},
       "assets.end_image_file_path": {"flag": "end-image", "file_kind": "image", "help": "Optional last-frame image path or URL."}
@@ -57,7 +57,7 @@
     "kind": "audio",
     "example": "mh audio generate --prompt 'Hello from Magic Hour' --voice 'Morgan Freeman'",
     "overrides": {
-      "style.prompt": {"flag": "prompt", "help": "Text to speak (up to 1000 characters)."},
+      "style.prompt": {"flag": "prompt", "max_length": 1000, "help": "Text to speak (up to 1000 characters)."},
       "style.voice_name": {"flag": "voice", "help": "Voice name; press Tab to complete available voices."}
     }
   },

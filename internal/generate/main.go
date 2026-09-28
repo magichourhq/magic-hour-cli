@@ -20,12 +20,13 @@ type metadata struct {
 	ID, Group, Name, Variant, Kind, Example string
 	Omit                                    []string
 	Overrides                               map[string]struct {
-		Flag     string `json:"flag"`
-		Default  string `json:"default"`
-		FileKind string `json:"file_kind"`
-		Help     string `json:"help"`
-		Required bool   `json:"required"`
-		MinItems int    `json:"min_items"`
+		Flag      string `json:"flag"`
+		Default   string `json:"default"`
+		FileKind  string `json:"file_kind"`
+		Help      string `json:"help"`
+		Required  bool   `json:"required"`
+		MinItems  int    `json:"min_items"`
+		MaxLength int    `json:"max_length"`
 	}
 }
 
@@ -119,6 +120,9 @@ func generate(specPath, metaPath, outPath string) error {
 						}
 						f.Required = f.Required || override.Required
 						f.MinItems = max(f.MinItems, override.MinItems)
+						if override.MaxLength > 0 && (f.MaxLength == 0 || override.MaxLength < f.MaxLength) {
+							f.MaxLength = override.MaxLength
+						}
 					}
 					if flags[f.Flag] || slices.Contains([]string{"help", "format", "dry-run", "output", "no-wait", "no-download", "timeout"}, f.Flag) {
 						return fmt.Errorf("%s: flag collision --%s", m.ID, f.Flag)
