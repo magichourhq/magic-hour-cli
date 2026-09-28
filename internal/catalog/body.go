@@ -5,6 +5,7 @@ import (
 	"math"
 	"slices"
 	"strconv"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -65,7 +66,18 @@ func (op Operation) Body(values map[string][]string) (map[string]any, error) {
 
 func (f Field) scalar(s string) (any, error) {
 	if len(f.Enum) > 0 && !slices.Contains(f.Enum, s) {
-		return nil, fmt.Errorf("--%s must be one of %v", f.Flag, f.Enum)
+		for _, choice := range f.Enum {
+			if strings.EqualFold(s, choice) {
+				s = choice
+				break
+			}
+		}
+		if !slices.Contains(f.Enum, s) {
+			if len(f.Enum) > 10 {
+				return nil, fmt.Errorf("--%s must be one of %d choices; use shell completion", f.Flag, len(f.Enum))
+			}
+			return nil, fmt.Errorf("--%s must be one of %v", f.Flag, f.Enum)
+		}
 	}
 	switch f.Type {
 	case "string":

@@ -1,7 +1,7 @@
 # Magic Hour CLI
 
-Generate images and videos from your terminal with `mh`. It uploads local inputs,
-waits for the project to finish, and downloads the result.
+Generate images, videos, and speech from your terminal with `mh`. It uploads
+local inputs, waits for the project to finish, and downloads the result.
 
 ## Install
 
@@ -98,6 +98,19 @@ last frame. Model completion uses the image-to-video list when `--image` is set,
 or shows both lists before a mode is chosen. The API chooses a model and
 resolution if you omit them.
 
+## Generate speech
+
+```sh
+mh audio generate --prompt 'Hello from Magic Hour' --voice 'Morgan Freeman'
+mh audio clone --sample voice.mp3 --prompt 'Hello in my voice'
+```
+
+`generate` speaks text with a named voice. Complete `--voice` with Tab; names
+must match an available voice. `clone` speaks text using a sample audio file or
+URL. Local samples upload automatically. Both commands download the finished
+audio by default. These endpoints currently return WAV files; use `.wav` for a
+custom `--output` filename.
+
 Commands wait and download by default. `--no-wait` returns the project ID
 immediately; `--no-download` waits and returns output URLs. Text output shows
 files or URLs first, then credits charged and the project ID. It shows status
@@ -117,6 +130,10 @@ mh video get PROJECT_ID
 mh video wait PROJECT_ID
 mh video download PROJECT_ID
 mh video delete PROJECT_ID
+mh audio get PROJECT_ID
+mh audio wait PROJECT_ID
+mh audio download PROJECT_ID
+mh audio delete PROJECT_ID
 ```
 
 `wait` checks for completion but does not download. `download` requires a
@@ -142,8 +159,11 @@ flag.
 mh --help
 mh image generate --help
 mh video generate --help
+mh audio generate --help
+mh audio clone --help
 mh schema image edit
 mh schema video generate
+mh schema audio generate
 mh completion zsh
 ```
 
