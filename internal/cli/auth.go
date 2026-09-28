@@ -65,7 +65,7 @@ func loginCommand() *cobra.Command {
 		if strings.IndexFunc(key, unicode.IsSpace) >= 0 {
 			return fmt.Errorf("API key must not contain whitespace")
 		}
-		account, err := validateKey(ctx, key)
+		account, err := validateKey(ctx, key, cmd.Root().Version)
 		if err != nil {
 			return err
 		}
@@ -88,7 +88,7 @@ func whoamiCommand() *cobra.Command {
 		}
 		ctx, cancel := context.WithTimeout(cmd.Context(), time.Minute)
 		defer cancel()
-		account, err := validateKey(ctx, key)
+		account, err := validateKey(ctx, key, cmd.Root().Version)
 		if err != nil {
 			return err
 		}
@@ -140,9 +140,9 @@ type accountInfo struct {
 	Subscription json.RawMessage `json:"subscription"`
 }
 
-func validateKey(ctx context.Context, key string) (accountInfo, error) {
+func validateKey(ctx context.Context, key, version string) (accountInfo, error) {
 	var account accountInfo
-	if err := api.New(key).Do(ctx, http.MethodGet, "/v1/account", nil, &account); err != nil {
+	if err := api.New(key, version).Do(ctx, http.MethodGet, "/v1/account", nil, &account); err != nil {
 		return accountInfo{}, err
 	}
 	return account, nil

@@ -15,12 +15,17 @@ import (
 )
 
 type Client struct {
-	key  string
-	http *http.Client
+	key       string
+	userAgent string
+	http      *http.Client
 }
 
-func New(key string) *Client {
-	return &Client{key: key, http: &http.Client{Timeout: 2 * time.Minute, CheckRedirect: func(req *http.Request, via []*http.Request) error {
+func New(key string, version ...string) *Client {
+	userAgent := "magic-hour-cli"
+	if len(version) > 0 && version[0] != "" {
+		userAgent += "/" + version[0]
+	}
+	return &Client{key: key, userAgent: userAgent, http: &http.Client{Timeout: 2 * time.Minute, CheckRedirect: func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}}}
 }
@@ -48,7 +53,7 @@ func (c *Client) Do(ctx context.Context, method, path string, body, result any) 
 	}
 	req.Header.Set("Authorization", "Bearer "+c.key)
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "magic-hour-cli")
+	req.Header.Set("User-Agent", c.userAgent)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
