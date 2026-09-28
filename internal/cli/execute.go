@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"text/tabwriter"
 	"time"
 
 	"github.com/magichourhq/magic-hour-cli/internal/api"
@@ -49,31 +50,26 @@ func printResult(cmd *cobra.Command, result workflow.Result) error {
 	if format == "json" {
 		return writeJSON(cmd, result)
 	}
-	if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Project ID:", result.ID); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Status:", result.Status); err != nil {
-		return err
+	w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
+	if result.Error != "" {
+		fmt.Fprintf(w, "Error:\t%s\n", result.Error)
+	} else {
+		for _, output := range result.Outputs {
+			if output.Path != "" {
+				fmt.Fprintf(w, "File:\t%s\n", output.Path)
+			} else {
+				fmt.Fprintf(w, "URL:\t%s\n", output.URL)
+			}
+		}
 	}
 	if result.CreditsCharged != nil {
-		if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Credits charged:", *result.CreditsCharged); err != nil {
-			return err
-		}
+		fmt.Fprintf(w, "Credits charged:\t%d\n", *result.CreditsCharged)
 	}
-	if result.Error != "" {
-		_, err := fmt.Fprintln(cmd.OutOrStdout(), "Error:", result.Error)
-		return err
+	fmt.Fprintf(w, "Project ID:\t%s\n", result.ID)
+	if result.Error == "" && (result.Status != "complete" || len(result.Outputs) == 0) {
+		fmt.Fprintf(w, "Status:\t%s\n", result.Status)
 	}
-	for _, output := range result.Outputs {
-		value := output.Path
-		if value == "" {
-			value = output.URL
-		}
-		if _, err := fmt.Fprintln(cmd.OutOrStdout(), "Output:", value); err != nil {
-			return err
-		}
-	}
-	return nil
+	return w.Flush()
 }
 
 func addManagement(group *cobra.Command, kind string) {
