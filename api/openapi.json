@@ -222,7 +222,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.account.list();"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.account.list();"
           },
           {
             "lang": "go",
@@ -493,7 +493,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.savedItems.list();"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.savedItems.list();"
           },
           {
             "lang": "go",
@@ -820,7 +820,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.files.uploadUrls.create({\n  items: [\n    { extension: \"mp4\", type: \"video\" },\n    { extension: \"mp3\", type: \"audio\" },\n  ],\n});"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.files.uploadUrls.create({\n  items: [\n    { extension: \"mp4\", type: \"video\" },\n    { extension: \"mp3\", type: \"audio\" },\n  ],\n});"
           },
           {
             "lang": "go",
@@ -1111,7 +1111,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.faceDetection.get({ id: \"uuid-example\" });"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.faceDetection.get({ id: \"uuid-example\" });"
           },
           {
             "lang": "go",
@@ -1387,7 +1387,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.faceDetection.generate(\n  {\n    assets: { targetFilePath: \"/path/to/1234.png\" },\n    confidenceScore: 0.5,\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.faceDetection.generate(\n  {\n    assets: { targetFilePath: \"/path/to/1234.png\" },\n    confidenceScore: 0.5,\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -1757,7 +1757,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.videoProjects.get({ id: \"cuid-example\" });"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.videoProjects.get({ id: \"cuid-example\" });"
           },
           {
             "lang": "go",
@@ -1981,7 +1981,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.videoProjects.delete({ id: \"cuid-example\" });"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.videoProjects.delete({ id: \"cuid-example\" });"
           },
           {
             "lang": "go",
@@ -2008,7 +2008,7 @@
     },
     "/v1/ai-talking-photo": {
       "post": {
-        "description": "Create a talking photo from an image and audio or text input.",
+        "description": "Create a talking photo video from an image and an audio file.",
         "summary": "AI Talking Photo",
         "tags": [
           "Video Projects"
@@ -2025,8 +2025,8 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "Give your image a custom name for easy identification.",
-                    "example": "My Talking Photo image",
+                    "description": "Give your video a custom name for easy identification.",
+                    "example": "My Talking Photo video",
                     "default": "Talking Photo - dateTime"
                   },
                   "start_seconds": {
@@ -2325,7 +2325,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiTalkingPhoto.generate(\n  {\n    assets: {\n      audioFilePath: \"/path/to/1234.mp3\",\n      imageFilePath: \"/path/to/1234.png\",\n    },\n    endSeconds: 15.0,\n    name: \"Talking Photo image\",\n    startSeconds: 0.0,\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiTalkingPhoto.generate(\n  {\n    assets: {\n      audioFilePath: \"/path/to/1234.mp3\",\n      imageFilePath: \"/path/to/1234.png\",\n    },\n    endSeconds: 15.0,\n    name: \"Talking Photo image\",\n    startSeconds: 0.0,\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -2659,7 +2659,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiVideoEditor.generate(\n  {\n    assets: { videoFilePath: \"/path/to/1234.mp4\" },\n    endSeconds: 5.0,\n    name: \"My Video Editor video\",\n    startSeconds: 0.0,\n    style: { prompt: \"Change the car color to blue\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiVideoEditor.generate(\n  {\n    assets: { videoFilePath: \"/path/to/1234.mp4\" },\n    endSeconds: 5.0,\n    name: \"My Video Editor video\",\n    startSeconds: 0.0,\n    style: { prompt: \"Change the car color to blue\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -3028,7 +3028,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiVideoTranslator.generate({\n  assets: { videoFilePath: \"/path/to/video.mp4\" },\n  endSeconds: 15.0,\n  targetLanguage: \"Spanish\",\n  startSeconds: 0.0,\n});"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiVideoTranslator.generate({\n  assets: { videoFilePath: \"/path/to/video.mp4\" },\n  endSeconds: 15.0,\n  targetLanguage: \"Spanish\",\n  startSeconds: 0.0,\n});"
           },
           {
             "lang": "go",
@@ -3513,7 +3513,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.animation.generate(\n  {\n    assets: {\n      audioFilePath: \"/path/to/1234.mp3\",\n      audioSource: \"file\",\n      imageFilePath: \"/path/to/1234.png\",\n    },\n    endSeconds: 15.0,\n    fps: 12.0,\n    height: 960,\n    name: \"Animation video\",\n    style: {\n      artStyle: \"Painterly Illustration\",\n      cameraEffect: \"Simple Zoom In\",\n      prompt: \"Cyberpunk city\",\n      promptType: \"custom\",\n      transitionSpeed: 5,\n    },\n    width: 512,\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.animation.generate(\n  {\n    assets: {\n      audioFilePath: \"/path/to/1234.mp3\",\n      audioSource: \"file\",\n      imageFilePath: \"/path/to/1234.png\",\n    },\n    endSeconds: 15.0,\n    fps: 12.0,\n    height: 960,\n    name: \"Animation video\",\n    style: {\n      artStyle: \"Painterly Illustration\",\n      cameraEffect: \"Simple Zoom In\",\n      prompt: \"Cyberpunk city\",\n      promptType: \"custom\",\n      transitionSpeed: 5,\n    },\n    width: 512,\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -3838,7 +3838,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.audioToVideo.generate(\n  {\n    assets: {\n      audioFilePath: \"/path/to/1234.mp3\",\n      imageFilePath: \"/path/to/1234.png\",\n    },\n    endSeconds: 15.0,\n    name: \"Audio To Video video\",\n    resolution: \"720p\",\n    startSeconds: 0.0,\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.audioToVideo.generate(\n  {\n    assets: {\n      audioFilePath: \"/path/to/1234.mp3\",\n      imageFilePath: \"/path/to/1234.png\",\n    },\n    endSeconds: 15.0,\n    name: \"Audio To Video video\",\n    resolution: \"720p\",\n    startSeconds: 0.0,\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -4204,7 +4204,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.autoSubtitleGenerator.generate(\n  {\n    assets: { videoFilePath: \"/path/to/1234.mp4\" },\n    endSeconds: 15.0,\n    name: \"Auto Subtitle video\",\n    startSeconds: 0.0,\n    style: {},\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.autoSubtitleGenerator.generate(\n  {\n    assets: { videoFilePath: \"/path/to/1234.mp4\" },\n    endSeconds: 15.0,\n    name: \"Auto Subtitle video\",\n    startSeconds: 0.0,\n    style: {},\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -4590,7 +4590,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.characterReplace.generate(\n  {\n    assets: {\n      imageFilePath: \"/path/to/5678.png\",\n      videoFilePath: \"/path/to/1234.mp4\",\n    },\n    endSeconds: 15.0,\n    name: \"My Character Replace video\",\n    resolution: \"720p\",\n    startSeconds: 0.0,\n    style: { mode: \"replace\", selectionMode: \"auto\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.characterReplace.generate(\n  {\n    assets: {\n      imageFilePath: \"/path/to/5678.png\",\n      videoFilePath: \"/path/to/1234.mp4\",\n    },\n    endSeconds: 15.0,\n    name: \"My Character Replace video\",\n    resolution: \"720p\",\n    startSeconds: 0.0,\n    style: { mode: \"replace\", selectionMode: \"auto\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -4977,7 +4977,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.faceSwap.generate(\n  {\n    assets: {\n      faceSwapMode: \"all-faces\",\n      imageFilePath: \"image/id/1234.png\",\n      videoFilePath: \"/path/to/1234.mp4\",\n      videoSource: \"file\",\n    },\n    endSeconds: 15.0,\n    name: \"Face Swap video\",\n    startSeconds: 0.0,\n    style: { version: \"default\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.faceSwap.generate(\n  {\n    assets: {\n      faceSwapMode: \"all-faces\",\n      imageFilePath: \"image/id/1234.png\",\n      videoFilePath: \"/path/to/1234.mp4\",\n      videoSource: \"file\",\n    },\n    endSeconds: 15.0,\n    name: \"Face Swap video\",\n    startSeconds: 0.0,\n    style: { version: \"default\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -5358,7 +5358,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.imageToVideo.generate(\n  {\n    assets: { imageFilePath: \"/path/to/1234.png\" },\n    endSeconds: 5.0,\n    name: \"Image To Video video\",\n    resolution: \"720p\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.imageToVideo.generate(\n  {\n    assets: { imageFilePath: \"/path/to/1234.png\" },\n    endSeconds: 5.0,\n    name: \"Image To Video video\",\n    resolution: \"720p\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -5484,7 +5484,7 @@
                           "standard",
                           "pro"
                         ],
-                        "description": "A specific version of our lip sync system, optimized for different needs.\n* `lite` -  Fast lip sync - best for simple videos. Costs 1 credit per frame of video.\n* `standard` -  Natural, accurate lip sync - best for most creators. Costs 1 credit per frame of video.\n* `pro` -  Premium fidelity with enhanced detail - best for professionals. Costs 2 credits per frame of video.\n\nNote: `standard` and `pro` are only available for users on Creator, Pro, and Business tiers.\n              ",
+                        "description": "A specific version of our lip sync system, optimized for different needs.\n* `lite` -  Fast lip sync - best for simple videos. Costs 1 credit per frame of video.\n* `standard` -  Natural, accurate lip sync - best for most creators. Requires visible mouth movement in the opening seconds of the input video. Costs 1 credit per frame of video.\n* `pro` -  Premium fidelity with enhanced detail - best for professionals. Requires visible mouth movement in the opening seconds of the input video. Costs 2 credits per frame of video.\n\nIf your source is a still image, including a still image saved as a static video, use [AI Talking Photo](https://docs.magichour.ai/api-reference/video-projects/ai-talking-photo) with the original image and your audio instead.\n\nNote: `pro` is only available for users on Creator, Pro, and Business tiers.\n              ",
                         "example": "lite"
                       }
                     },
@@ -5711,7 +5711,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.lipSync.generate(\n  {\n    assets: {\n      audioFilePath: \"/path/to/1234.mp3\",\n      videoFilePath: \"/path/to/1234.mp4\",\n      videoSource: \"file\",\n    },\n    endSeconds: 15.0,\n    maxFpsLimit: 12.0,\n    name: \"Lip Sync video\",\n    startSeconds: 0.0,\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.lipSync.generate(\n  {\n    assets: {\n      audioFilePath: \"/path/to/1234.mp3\",\n      videoFilePath: \"/path/to/1234.mp4\",\n      videoSource: \"file\",\n    },\n    endSeconds: 15.0,\n    maxFpsLimit: 12.0,\n    name: \"Lip Sync video\",\n    startSeconds: 0.0,\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -6100,7 +6100,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.textToVideo.generate(\n  {\n    aspectRatio: \"16:9\",\n    endSeconds: 5.0,\n    name: \"Text To Video video\",\n    resolution: \"720p\",\n    style: { prompt: \"a dog running\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.textToVideo.generate(\n  {\n    aspectRatio: \"16:9\",\n    endSeconds: 5.0,\n    name: \"Text To Video video\",\n    resolution: \"720p\",\n    style: { prompt: \"a dog running\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -6565,7 +6565,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.videoToVideo.generate(\n  {\n    assets: { videoFilePath: \"/path/to/1234.mp4\", videoSource: \"file\" },\n    endSeconds: 15.0,\n    fpsResolution: \"HALF\",\n    name: \"Video To Video video\",\n    startSeconds: 0.0,\n    style: {\n      artStyle: \"3D Render\",\n      model: \"default\",\n      prompt: \"string\",\n      promptType: \"default\",\n      version: \"default\",\n    },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.videoToVideo.generate(\n  {\n    assets: { videoFilePath: \"/path/to/1234.mp4\", videoSource: \"file\" },\n    endSeconds: 15.0,\n    fpsResolution: \"HALF\",\n    name: \"Video To Video video\",\n    startSeconds: 0.0,\n    style: {\n      artStyle: \"3D Render\",\n      model: \"default\",\n      prompt: \"string\",\n      promptType: \"default\",\n      version: \"default\",\n    },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -6884,7 +6884,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.imageProjects.get({ id: \"cuid-example\" });"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.imageProjects.get({ id: \"cuid-example\" });"
           },
           {
             "lang": "go",
@@ -7081,7 +7081,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.imageProjects.delete({ id: \"cuid-example\" });"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.imageProjects.delete({ id: \"cuid-example\" });"
           },
           {
             "lang": "go",
@@ -7381,7 +7381,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiClothesChanger.generate(\n  {\n    assets: {\n      garmentFilePath: \"/path/to/outfit.png\",\n      garmentType: \"upper_body\",\n      personFilePath: \"/path/to/model.png\",\n    },\n    name: \"Clothes Changer image\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiClothesChanger.generate(\n  {\n    assets: {\n      garmentFilePath: \"/path/to/outfit.png\",\n      garmentType: \"upper_body\",\n      personFilePath: \"/path/to/model.png\",\n    },\n    name: \"Clothes Changer image\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -7802,7 +7802,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiFaceEditor.generate(\n  {\n    assets: { imageFilePath: \"/path/to/1234.png\" },\n    name: \"Face Editor image\",\n    style: {\n      enhanceFace: false,\n      eyeGazeHorizontal: 0.0,\n      eyeGazeVertical: 0.0,\n      eyeOpenRatio: 0.0,\n      eyebrowDirection: 0.0,\n      headPitch: 0.0,\n      headRoll: 0.0,\n      headYaw: 0.0,\n      lipOpenRatio: 0.0,\n      mouthGrim: 0.0,\n      mouthPositionHorizontal: 0.0,\n      mouthPositionVertical: 0.0,\n      mouthPout: 0.0,\n      mouthPurse: 0.0,\n      mouthSmile: 0.0,\n    },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiFaceEditor.generate(\n  {\n    assets: { imageFilePath: \"/path/to/1234.png\" },\n    name: \"Face Editor image\",\n    style: {\n      enhanceFace: false,\n      eyeGazeHorizontal: 0.0,\n      eyeGazeVertical: 0.0,\n      eyeOpenRatio: 0.0,\n      eyebrowDirection: 0.0,\n      headPitch: 0.0,\n      headRoll: 0.0,\n      headYaw: 0.0,\n      lipOpenRatio: 0.0,\n      mouthGrim: 0.0,\n      mouthPositionHorizontal: 0.0,\n      mouthPositionVertical: 0.0,\n      mouthPout: 0.0,\n      mouthPurse: 0.0,\n      mouthSmile: 0.0,\n    },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -8095,7 +8095,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiGifGenerator.generate(\n  {\n    name: \"Ai Gif gif\",\n    style: { prompt: \"Cute dancing cat, pixel art\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiGifGenerator.generate(\n  {\n    name: \"Ai Gif gif\",\n    style: { prompt: \"Cute dancing cat, pixel art\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -8159,6 +8159,7 @@
                     "type": "string",
                     "enum": [
                       "default",
+                      "qwen-image-2.1",
                       "qwen-edit",
                       "flux-2-klein",
                       "nano-banana-2-lite",
@@ -8172,7 +8173,7 @@
                       "nano-banana",
                       "nano-banana-pro"
                     ],
-                    "description": "The AI model to use for image editing. Each model has different capabilities and costs.\n\n**Models:**\n- `default` - Use the model we recommend, which will change over time. This is recommended unless you need a specific model. This is the default behavior.\n- `flux-2-klein` - from 5 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Max additional input images: 5\n- `gpt-image-2` - from 50 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `gpt-image-2.5-flare` - from 100 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `krea-2` - from 10 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: free, creator, pro, business\n  - Max additional input images: 1\n- `nano-banana` - from 50 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `nano-banana-2` - from 100 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `nano-banana-2-lite` - from 50 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `nano-banana-pro` - from 150 credits/image\n  - Supported resolutions: 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `qwen-edit` - from 10 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Max additional input images: 2\n- `seedream-v4` - from 40 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `seedream-v4.5` - from 50 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `seedream-v5-pro` - from 75 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n",
+                    "description": "The AI model to use for image editing. Each model has different capabilities and costs.\n\n**Models:**\n- `default` - Use the model we recommend, which will change over time. This is recommended unless you need a specific model. This is the default behavior.\n- `flux-2-klein` - from 5 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Max additional input images: 5\n- `gpt-image-2` - from 50 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `gpt-image-2.5-flare` - from 100 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `krea-2` - from 10 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: free, creator, pro, business\n  - Max additional input images: 1\n- `nano-banana` - from 50 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `nano-banana-2` - from 100 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `nano-banana-2-lite` - from 50 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `nano-banana-pro` - from 150 credits/image\n  - Supported resolutions: 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `qwen-edit` - from 10 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Max additional input images: 2\n- `qwen-image-2.1` - from 10 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Max additional input images: 2\n- `seedream-v4` - from 40 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `seedream-v4.5` - from 50 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n- `seedream-v5-pro` - from 75 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: creator, pro, business\n  - Max additional input images: 9\n",
                     "example": "default"
                   },
                   "aspect_ratio": {
@@ -8199,7 +8200,7 @@
                       "2k",
                       "4k"
                     ],
-                    "description": "Maximum resolution (longest edge) for the output image.\n\n**Options:**\n- `640px` — up to 640px\n- `1k` — up to 1024px\n- `2k` — up to 2048px\n- `4k` — up to 4096px\n- `auto` — **Deprecated.** Mapped server-side from your subscription tier to the best matching resolution the model supports\n\n**Per-model support:**\n- `flux-2-klein` - 640px, 1k, 2k\n- `gpt-image-2` - 640px, 1k, 2k, 4k\n- `gpt-image-2.5-flare` - 640px, 1k, 2k, 4k\n- `krea-2` - 640px, 1k\n- `nano-banana` - 640px, 1k\n- `nano-banana-2` - 640px, 1k, 2k, 4k\n- `nano-banana-2-lite` - 640px, 1k\n- `nano-banana-pro` - 1k, 2k, 4k\n- `qwen-edit` - 640px, 1k, 2k\n- `seedream-v4` - 640px, 1k, 2k, 4k\n- `seedream-v4.5` - 640px, 1k, 2k, 4k\n- `seedream-v5-pro` - 640px, 1k, 2k\n\nNote: Resolution availability depends on the model and your subscription tier.",
+                    "description": "Maximum resolution (longest edge) for the output image.\n\n**Options:**\n- `640px` — up to 640px\n- `1k` — up to 1024px\n- `2k` — up to 2048px\n- `4k` — up to 4096px\n- `auto` — **Deprecated.** Mapped server-side from your subscription tier to the best matching resolution the model supports\n\n**Per-model support:**\n- `flux-2-klein` - 640px, 1k, 2k\n- `gpt-image-2` - 640px, 1k, 2k, 4k\n- `gpt-image-2.5-flare` - 640px, 1k, 2k, 4k\n- `krea-2` - 640px, 1k\n- `nano-banana` - 640px, 1k\n- `nano-banana-2` - 640px, 1k, 2k, 4k\n- `nano-banana-2-lite` - 640px, 1k\n- `nano-banana-pro` - 1k, 2k, 4k\n- `qwen-edit` - 640px, 1k, 2k\n- `qwen-image-2.1` - 640px, 1k, 2k\n- `seedream-v4` - 640px, 1k, 2k, 4k\n- `seedream-v4.5` - 640px, 1k, 2k, 4k\n- `seedream-v5-pro` - 640px, 1k, 2k\n\nNote: Resolution availability depends on the model and your subscription tier.",
                     "example": "1k"
                   },
                   "style": {
@@ -8472,7 +8473,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiImageEditor.generate(\n  {\n    assets: { imageFilePaths: [\"/path/to/1234.png\", \"/path/to/1235.png\"] },\n    name: \"Ai Image Editor image\",\n    style: { prompt: \"Give me sunglasses\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiImageEditor.generate(\n  {\n    assets: { imageFilePaths: [\"/path/to/1234.png\", \"/path/to/1235.png\"] },\n    name: \"Ai Image Editor image\",\n    style: { prompt: \"Give me sunglasses\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -8763,7 +8764,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiHeadshotGenerator.generate(\n  {\n    assets: { imageFilePath: \"/path/to/1234.png\" },\n    name: \"Ai Headshot image\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiHeadshotGenerator.generate(\n  {\n    assets: { imageFilePath: \"/path/to/1234.png\" },\n    name: \"Ai Headshot image\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -8823,6 +8824,7 @@
                     "enum": [
                       "default",
                       "z-image-turbo",
+                      "qwen-image-2.1",
                       "flux-2-klein",
                       "nano-banana-2-lite",
                       "nano-banana-2",
@@ -8836,7 +8838,7 @@
                       "flux-schnell",
                       "seedream"
                     ],
-                    "description": "The AI model to use for image generation. Each model has different capabilities and costs.\n\n**Models:**\n- `default` - Use the model we recommend, which will change over time. This is recommended unless you need a specific model. This is the default behavior.\n- `flux-2-klein` - from 5 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Image count allowed: 1\n- `flux-schnell` - from 5 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `gpt-image-2` - from 50 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `gpt-image-2.5-flare` - from 100 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `krea-2` - from 10 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: free, creator, pro, business\n  - Image count allowed: 1\n- `nano-banana` - from 50 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `nano-banana-2` - from 100 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 4, 9, 16\n- `nano-banana-2-lite` - from 50 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `nano-banana-pro` - from 150 credits/image\n  - Supported resolutions: 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 4, 9, 16\n- `seedream-v4` - from 40 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `seedream-v5-pro` - from 75 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `z-image-turbo` - from 5 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n\n**Deprecated Enum Values:**\n- `seedream` - Use `seedream-v4` instead.\n",
+                    "description": "The AI model to use for image generation. Each model has different capabilities and costs.\n\n**Models:**\n- `default` - Use the model we recommend, which will change over time. This is recommended unless you need a specific model. This is the default behavior.\n- `flux-2-klein` - from 5 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Image count allowed: 1\n- `flux-schnell` - from 5 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `gpt-image-2` - from 50 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `gpt-image-2.5-flare` - from 100 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `krea-2` - from 10 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: free, creator, pro, business\n  - Image count allowed: 1\n- `nano-banana` - from 50 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `nano-banana-2` - from 100 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 4, 9, 16\n- `nano-banana-2-lite` - from 50 credits/image\n  - Supported resolutions: 640px, 1k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `nano-banana-pro` - from 150 credits/image\n  - Supported resolutions: 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 4, 9, 16\n- `qwen-image-2.1` - from 10 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `seedream-v4` - from 40 credits/image\n  - Supported resolutions: 640px, 1k, 2k, 4k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `seedream-v5-pro` - from 75 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n- `z-image-turbo` - from 5 credits/image\n  - Supported resolutions: 640px, 1k, 2k\n  - Available for tiers: free, creator, pro, business\n  - Image count allowed: 1, 2, 3, 4\n\n**Deprecated Enum Values:**\n- `seedream` - Use `seedream-v4` instead.\n",
                     "example": "default"
                   },
                   "aspect_ratio": {
@@ -8859,7 +8861,7 @@
                       "2k",
                       "4k"
                     ],
-                    "description": "Maximum resolution (longest edge) for the output image.\n\n**Options:**\n- `640px` — up to 640px\n- `1k` — up to 1024px\n- `2k` — up to 2048px\n- `4k` — up to 4096px\n- `auto` — **Deprecated.** Mapped server-side from your subscription tier to the best matching resolution the model supports\n\n**Per-model support:**\n- `flux-2-klein` - 640px, 1k, 2k\n- `flux-schnell` - 640px, 1k, 2k\n- `gpt-image-2` - 640px, 1k, 2k, 4k\n- `gpt-image-2.5-flare` - 640px, 1k, 2k, 4k\n- `krea-2` - 640px, 1k\n- `nano-banana` - 640px, 1k\n- `nano-banana-2` - 640px, 1k, 2k, 4k\n- `nano-banana-2-lite` - 640px, 1k\n- `nano-banana-pro` - 1k, 2k, 4k\n- `seedream-v4` - 640px, 1k, 2k, 4k\n- `seedream-v5-pro` - 640px, 1k, 2k\n- `z-image-turbo` - 640px, 1k, 2k\n\nNote: Resolution availability depends on the model and your subscription tier.",
+                    "description": "Maximum resolution (longest edge) for the output image.\n\n**Options:**\n- `640px` — up to 640px\n- `1k` — up to 1024px\n- `2k` — up to 2048px\n- `4k` — up to 4096px\n- `auto` — **Deprecated.** Mapped server-side from your subscription tier to the best matching resolution the model supports\n\n**Per-model support:**\n- `flux-2-klein` - 640px, 1k, 2k\n- `flux-schnell` - 640px, 1k, 2k\n- `gpt-image-2` - 640px, 1k, 2k, 4k\n- `gpt-image-2.5-flare` - 640px, 1k, 2k, 4k\n- `krea-2` - 640px, 1k\n- `nano-banana` - 640px, 1k\n- `nano-banana-2` - 640px, 1k, 2k, 4k\n- `nano-banana-2-lite` - 640px, 1k\n- `nano-banana-pro` - 1k, 2k, 4k\n- `qwen-image-2.1` - 640px, 1k, 2k\n- `seedream-v4` - 640px, 1k, 2k, 4k\n- `seedream-v5-pro` - 640px, 1k, 2k\n- `z-image-turbo` - 640px, 1k, 2k\n\nNote: Resolution availability depends on the model and your subscription tier.",
                     "example": "1k"
                   },
                   "orientation": {
@@ -9159,7 +9161,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiImageGenerator.generate(\n  {\n    aspectRatio: \"1:1\",\n    imageCount: 1,\n    model: \"default\",\n    name: \"My Ai Image image\",\n    resolution: \"1k\",\n    style: { prompt: \"Cool image\", tool: \"ai-anime-generator\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiImageGenerator.generate(\n  {\n    aspectRatio: \"1:1\",\n    imageCount: 1,\n    model: \"default\",\n    name: \"My Ai Image image\",\n    resolution: \"1k\",\n    style: { prompt: \"Cool image\", tool: \"ai-anime-generator\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -9479,7 +9481,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiImageUpscaler.generate(\n  {\n    assets: { imageFilePath: \"/path/to/1234.png\" },\n    name: \"Image Upscaler image\",\n    scaleFactor: 2.0,\n    style: { mode: \"balanced\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiImageUpscaler.generate(\n  {\n    assets: { imageFilePath: \"/path/to/1234.png\" },\n    name: \"Image Upscaler image\",\n    scaleFactor: 2.0,\n    style: { mode: \"balanced\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -9875,7 +9877,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiMemeGenerator.generate(\n  {\n    name: \"My Funny Meme\",\n    style: {\n      searchWeb: false,\n      template: \"Drake Hotline Bling\",\n      topic: \"When the code finally works\",\n    },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiMemeGenerator.generate(\n  {\n    name: \"My Funny Meme\",\n    style: {\n      searchWeb: false,\n      template: \"Drake Hotline Bling\",\n      topic: \"When the code finally works\",\n    },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -10161,7 +10163,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiQrCodeGenerator.generate(\n  {\n    content: \"https://magichour.ai\",\n    name: \"Qr Code image\",\n    style: { artStyle: \"Watercolor\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiQrCodeGenerator.generate(\n  {\n    content: \"https://magichour.ai\",\n    name: \"Qr Code image\",\n    style: { artStyle: \"Watercolor\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -10462,7 +10464,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.bodySwap.generate(\n  {\n    assets: {\n      personFilePath: \"/path/to/person.png\",\n      sceneFilePath: \"/path/to/scene.png\",\n    },\n    name: \"My Body Swap image\",\n    resolution: \"1k\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.bodySwap.generate(\n  {\n    assets: {\n      personFilePath: \"/path/to/person.png\",\n      sceneFilePath: \"/path/to/scene.png\",\n    },\n    name: \"My Body Swap image\",\n    resolution: \"1k\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -10790,7 +10792,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.faceSwapPhoto.generate(\n  {\n    assets: {\n      faceSwapMode: \"all-faces\",\n      sourceFilePath: \"/path/to/1234.png\",\n      targetFilePath: \"/path/to/1234.png\",\n    },\n    name: \"Face Swap image\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.faceSwapPhoto.generate(\n  {\n    assets: {\n      faceSwapMode: \"all-faces\",\n      sourceFilePath: \"/path/to/1234.png\",\n      targetFilePath: \"/path/to/1234.png\",\n    },\n    name: \"Face Swap image\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -11084,7 +11086,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.headSwap.create({\n  assets: {\n    bodyFilePath: \"api-assets/id/1234.png\",\n    headFilePath: \"api-assets/id/5678.png\",\n  },\n  maxResolution: 1024,\n  name: \"My Head Swap image\",\n});"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.headSwap.create({\n  assets: {\n    bodyFilePath: \"api-assets/id/1234.png\",\n    headFilePath: \"api-assets/id/5678.png\",\n  },\n  maxResolution: 1024,\n  name: \"My Head Swap image\",\n});"
           },
           {
             "lang": "go",
@@ -11370,7 +11372,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.imageBackgroundRemover.generate(\n  {\n    assets: {\n      backgroundImageFilePath: \"/path/to/1234.png\",\n      imageFilePath: \"/path/to/1234.png\",\n    },\n    name: \"Background Remover image\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.imageBackgroundRemover.generate(\n  {\n    assets: {\n      backgroundImageFilePath: \"/path/to/1234.png\",\n      imageFilePath: \"/path/to/1234.png\",\n    },\n    name: \"Background Remover image\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -11652,7 +11654,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.photoColorizer.generate(\n  {\n    assets: { imageFilePath: \"/path/to/1234.png\" },\n    name: \"Photo Colorizer image\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.photoColorizer.generate(\n  {\n    assets: { imageFilePath: \"/path/to/1234.png\" },\n    name: \"Photo Colorizer image\",\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -11959,7 +11961,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.audioProjects.get({ id: \"cuid-example\" });"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.audioProjects.get({ id: \"cuid-example\" });"
           },
           {
             "lang": "go",
@@ -12156,7 +12158,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.audioProjects.delete({ id: \"cuid-example\" });"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.audioProjects.delete({ id: \"cuid-example\" });"
           },
           {
             "lang": "go",
@@ -13710,7 +13712,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiVoiceGenerator.generate(\n  {\n    name: \"Voice Generator audio\",\n    style: { prompt: \"Hello, how are you?\", voiceName: \"Elon Musk\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiVoiceGenerator.generate(\n  {\n    name: \"Voice Generator audio\",\n    style: { prompt: \"Hello, how are you?\", voiceName: \"Elon Musk\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -14002,7 +14004,7 @@
           },
           {
             "lang": "javascript",
-            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"]!! });\nconst res = await client.v1.aiVoiceCloner.generate(\n  {\n    assets: { audioFilePath: \"/path/to/audio.mp3\" },\n    name: \"Voice Cloner audio\",\n    style: { prompt: \"Hello, this is my cloned voice.\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
+            "source": "import { Client } from \"magic-hour\";\n\nconst client = new Client({ token: process.env[\"MAGIC_HOUR_API_KEY\"] });\nconst res = await client.v1.aiVoiceCloner.generate(\n  {\n    assets: { audioFilePath: \"/path/to/audio.mp3\" },\n    name: \"Voice Cloner audio\",\n    style: { prompt: \"Hello, this is my cloned voice.\" },\n  },\n  {\n    waitForCompletion: true,\n    downloadOutputs: true,\n    downloadDirectory: \".\",\n  },\n);"
           },
           {
             "lang": "go",
@@ -14031,7 +14033,7 @@
   "info": {
     "title": "Magic Hour API",
     "version": "beta",
-    "description": "\nMagic Hour provides an API (beta) that can be integrated into your own application to generate videos and images using AI. \n\nWebhook documentation can be found [here](https://docs.magichour.ai/webhook-reference).\n\nIf you have any questions, please reach out to us via [discord](https://discord.gg/JX5rgsZaJp).\n\n# Authentication\n\nEvery request requires an API key.\n\nTo get started, first generate your API key [here](https://magichour.ai/developer?tab=api-keys&utm_source=docs&utm_medium=referral&utm_campaign=api-reference).\n\nThen, add the `Authorization` header to the request.\n\n| Key | Value |\n|-|-|\n| Authorization | Bearer mhk_live_apikey |\n\n> **Warning**: any API call that renders a video will utilize credits in your account.\n",
+    "description": "\nMagic Hour provides a REST API (beta) for generating and editing video, images, and audio using AI.\n\nWebhook documentation can be found [here](https://docs.magichour.ai/webhook-reference).\n\nIf you have any questions, please reach out to us via [discord](https://discord.gg/JX5rgsZaJp).\n\n# Authentication\n\nEvery request requires an API key.\n\nTo get started, first generate your API key [here](https://magichour.ai/developer?tab=api-keys&utm_source=docs&utm_medium=referral&utm_campaign=api-reference).\n\nThen, add the `Authorization` header to the request.\n\n| Key | Value |\n|-|-|\n| Authorization | Bearer mhk_live_apikey |\n\n> **Warning**: API generation and editing requests consume account credits. Cost varies by tool, model, and settings; see [API pricing](https://magichour.ai/api#api-cost-calculator).\n",
     "termsOfService": "https://magichour.ai/terms-of-service"
   },
   "components": {
