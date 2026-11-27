@@ -5,6 +5,16 @@ local inputs, waits for the project to finish, and downloads the result.
 
 ## Install
 
+### Shell installer: macOS and Linux
+
+```sh
+curl -fsSL https://magichour.ai/install.sh | sh
+```
+
+The installer verifies the latest stable release and puts `mh` in
+`~/.local/bin`. If your shell needs a PATH update, the installer prints the
+command. Run `mh version` to check the install. Rerun the installer to upgrade.
+
 ### Homebrew: macOS and Linux
 
 With [Homebrew](https://brew.sh) installed:
