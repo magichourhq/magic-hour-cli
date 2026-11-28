@@ -54,6 +54,7 @@ func (c *Client) Do(ctx context.Context, method, path string, body, result any) 
 	req.Header.Set("Authorization", "Bearer "+c.key)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", c.userAgent)
+	req.Header.Set("X-MagicHour-Source", "cli")
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
