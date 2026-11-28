@@ -82,6 +82,18 @@ key from a secret manager into `mh login --key-stdin`.
 key, but does not revoke it. Revoke it in the Developer Hub if needed. An
 environment key stays active after logout.
 
+## Estimate credits
+
+Check credit costs before creating a project.
+
+```sh
+mh image estimate --tool ai-image-generator --model nano-banana-2.1 --resolution 2k --count 4
+mh video estimate --tool image-to-video --end-seconds 5
+mh audio estimate --tool ai-voice-generator --character-count 120
+```
+
+Use `--format json` to read `estimated_credits` in a script.
+
 ## Generate and edit images
 
 ```sh
