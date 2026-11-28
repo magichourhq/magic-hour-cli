@@ -43,6 +43,7 @@ func New(version string) *cobra.Command {
 	if len(video) == 2 {
 		groups["video"].AddCommand(videoGenerateCommand(video["text"], video["image"]))
 	}
+	groups["image"].AddCommand(imageEstimateCommand())
 	root.AddCommand(&cobra.Command{Use: "schema [group command]", Short: "Print generated command definitions as JSON", Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 0 && len(args) != 2 {
 			return fmt.Errorf("usage: mh schema [group command]")

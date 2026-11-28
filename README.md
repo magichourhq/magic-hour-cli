@@ -89,6 +89,14 @@ mh image generate --prompt 'A mountain landscape at sunrise' --output landscape.
 mh image edit --image landscape.png --prompt 'Make it sunset' --output sunset.png
 ```
 
+Estimate an image request's credit cost without creating a project:
+
+```sh
+mh image estimate --tool ai-image-generator --model nano-banana-2.1 --resolution 2k --count 4
+```
+
+Use `--format json` to get the `estimated_credits` field for scripts.
+
 `--image` accepts a local path or URL. Local files upload automatically. Without
 `--output`, files go to the current directory as `mh-<project-id>-<number>.<ext>`.
 For multiple images, use `--count`. If you also set `--output`, it must point to
